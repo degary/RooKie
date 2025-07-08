@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rookie 登录</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            width: 400px;
+            overflow: hidden;
+        }
+        
+        .login-header {
+            text-align: center;
+            padding: 40px 40px 24px;
+        }
+        
+        .logo {
+            width: 48px;
+            height: 48px;
+            background: #1890ff;
+            border-radius: 8px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .login-title {
+            font-size: 28px;
+            color: #262626;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .login-subtitle {
+            color: #8c8c8c;
+            font-size: 14px;
+        }
+        
+        .login-tabs {
+            display: flex;
+            border-bottom: 1px solid #f0f0f0;
+            margin: 0 40px;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 12px 0;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #8c8c8c;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .tab-btn.active {
+            color: #1890ff;
+        }
+        
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 2px;
+            background: #1890ff;
+        }
+        
+        .login-content {
+            padding: 40px;
+        }
+        
+        .tab-panel {
+            display: none;
+        }
+        
+        .tab-panel.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s;
+            background: #fff;
+        }
+        
+        .form-input:hover {
+            border-color: #40a9ff;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #40a9ff;
+            box-shadow: 0 0 0 2px rgba(24,144,255,0.2);
+        }
+        
+        .login-btn {
+            width: 100%;
+            height: 40px;
+            background: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .login-btn:hover {
+            background: #40a9ff;
+        }
+        
+        .login-btn:disabled {
+            background: #f5f5f5;
+            color: #bfbfbf;
+            cursor: not-allowed;
+        }
+        
+        .qr-container {
+            text-align: center;
+        }
+        
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+        }
+        
+        .qr-placeholder {
+            color: #999;
+            font-size: 14px;
+        }
+        
+        .qr-providers {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .provider-btn {
+            padding: 6px 16px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .provider-btn:hover {
+            border-color: #40a9ff;
+            color: #1890ff;
+        }
+        
+        .provider-btn.active {
+            background: #1890ff;
+            color: white;
+            border-color: #1890ff;
+        }
+        
+        .qr-status {
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .status-waiting {
+            background: #fffbe6;
+            color: #d48806;
+            border: 1px solid #ffe58f;
+        }
+        
+        .status-success {
+            background: #f6ffed;
+            color: #389e0d;
+            border: 1px solid #b7eb8f;
+        }
+        
+        .status-error {
+            background: #fff2f0;
+            color: #cf1322;
+            border: 1px solid #ffccc7;
+        }
+        
+        .refresh-btn {
+            background: none;
+            border: none;
+            color: #1890ff;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 12px;
+            transition: color 0.3s;
+        }
+        
+        .refresh-btn:hover {
+            color: #40a9ff;
+        }
+        
+        .error-message {
+            color: #ff4d4f;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 4px;
+            color: #262626;
+            font-size: 14px;
+            font-weight: 400;
+        }
+        
+        @media (max-width: 480px) {
+            .login-container {
+                width: 90%;
+                margin: 20px;
+            }
+            
+            .login-content {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="logo">R</div>
+            <h1 class="login-title">欢迎使用 Rookie</h1>
+            <p class="login-subtitle">企业级应用管理平台</p>
+        </div>
+        
+        <div class="login-tabs">
+            <button class="tab-btn active" onclick="switchTab('password')">
+                账号登录
+            </button>
+            <button class="tab-btn" onclick="switchTab('qrcode')">
+                扫码登录
+            </button>
+        </div>
+        
+        <div class="login-content">
+            <!-- 账号登录面板 -->
+            <div id="password-panel" class="tab-panel active">
+                <form id="login-form">
+                    <div class="form-group">
+                        <label class="form-label">邮箱</label>
+                        <input type="email" class="form-input" id="email" placeholder="请输入邮箱地址" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">密码</label>
+                        <input type="password" class="form-input" id="password" placeholder="请输入密码" required>
+                    </div>
+                    <button type="submit" class="login-btn">登录</button>
+                    <div id="login-error" class="error-message" style="display: none;"></div>
+                </form>
+            </div>
+            
+            <!-- 扫码登录面板 -->
+            <div id="qrcode-panel" class="tab-panel">
+                <div class="qr-container">
+                    <div class="qr-providers" id="qr-providers">
+                        <div class="qr-placeholder">加载中...</div>
+                    </div>
+                    
+                    <div class="qr-code" id="qr-code">
+                        <div class="qr-placeholder">请选择登录方式</div>
+                    </div>
+                    
+                    <div id="qr-status" class="qr-status status-waiting" style="display: none;">
+                        等待扫码...
+                    </div>
+                    
+                    <button class="refresh-btn" onclick="refreshQR()" style="display: none;" id="refresh-btn">
+                        刷新二维码
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProvider = null;
+        let statusInterval = null;
+        
+        // 切换登录方式
+        function switchTab(type) {
+            // 更新标签状态
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(type + '-panel').classList.add('active');
+            
+            // 如果切换到扫码登录，加载提供商
+            if (type === 'qrcode') {
+                loadQRProviders();
+            }
+        }
+        
+        // 账号登录
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('login-error');
+            
+            try {
+                const response = await fetch('/api/users/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.href = '/admin/';
+                } else {
+                    errorDiv.textContent = data.message || '登录失败';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = '网络错误，请重试';
+                errorDiv.style.display = 'block';
+            }
+        });
+        
+        // 加载扫码登录提供商
+        async function loadQRProviders() {
+            try {
+                const response = await fetch('/api/users/third_party_providers/');
+                const data = await response.json();
+                
+                const container = document.getElementById('qr-providers');
+                
+                if (data.success && data.data.providers.length > 0) {
+                    container.innerHTML = data.data.providers.map(provider => 
+                        `<button class="provider-btn" onclick="selectProvider('${provider.name}')">${provider.display_name}</button>`
+                    ).join('');
+                } else {
+                    container.innerHTML = '<div class="qr-placeholder">暂无可用的扫码登录方式</div>';
+                }
+            } catch (error) {
+                document.getElementById('qr-providers').innerHTML = '<div class="qr-placeholder">加载失败</div>';
+            }
+        }
+        
+        // 选择登录提供商
+        function selectProvider(provider) {
+            // 更新按钮状态
+            document.querySelectorAll('.provider-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            currentProvider = provider;
+            generateQR(provider);
+        }
+        
+        // 生成二维码
+        function generateQR(provider) {
+            const qrCode = document.getElementById('qr-code');
+            const status = document.getElementById('qr-status');
+            const refreshBtn = document.getElementById('refresh-btn');
+            
+            // 跳转到第三方登录
+            window.location.href = `/api/users/third_party_auth/?provider=${provider}`;
+        }
+        
+        // 刷新二维码
+        function refreshQR() {
+            if (currentProvider) {
+                generateQR(currentProvider);
+            }
+        }
+        
+        // 获取Cookie
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>

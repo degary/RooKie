@@ -422,6 +422,55 @@ docker build -t rookie .
 docker run -p 8000:8000 -e DJANGO_ENV=prod rookie
 ```
 
+## 📋 函数返回规范
+
+### 统一响应格式
+
+所有API接口和函数调用都应使用统一的响应格式：
+
+```json
+{
+  "success": true,
+  "code": 200,
+  "message": "操作成功",
+  "data": {...},
+  "timestamp": "2024-01-01T12:00:00Z",
+  "request_id": "abc12345"
+}
+```
+
+### 使用方式
+
+#### API视图
+```python
+from utils.response import ApiResponse
+
+# 成功响应
+return ApiResponse.success(data=user_data).to_response()
+
+# 错误响应
+return ApiResponse.error("操作失败").to_response()
+```
+
+#### 普通函数
+```python
+from utils.response import ApiResponse
+
+# 函数返回
+def create_user(data):
+    return ApiResponse.success(data=user_data)
+```
+
+#### 快捷方法
+- `ApiResponse.success()` - 成功响应
+- `ApiResponse.created()` - 创建成功
+- `ApiResponse.error()` - 通用错误
+- `ApiResponse.not_found()` - 资源不存在
+- `ApiResponse.forbidden()` - 权限不足
+- `ApiResponse.validation_error()` - 数据验证失败
+
+详细使用方法请参考：[utils/response/README.md](utils/response/README.md)
+
 ## 🔧 开发指南
 
 ### 添加新的第三方登录插件

@@ -6,6 +6,7 @@ from django.contrib.auth import login, logout
 from django.shortcuts import redirect
 from django.urls import reverse
 from utils.logger import get_logger
+from utils.response import ApiResponse
 from plugins.manager import plugin_manager
 from .models import User, UserProfile, ThirdPartyAuthConfig
 from .serializers import (
@@ -41,11 +42,14 @@ class UserViewSet(viewsets.ModelViewSet):
                        userId=str(user.id), 
                        email=user.email,
                        ip=request.META.get('REMOTE_ADDR'))
-            return Response({
-                'message': '注册成功',
-                'user': UserSerializer(user).data
-            }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return ApiResponse.created(
+                data={'user': UserSerializer(user).data},
+                message='注册成功'
+            ).to_response()
+        return ApiResponse.validation_error(
+            message='数据验证失败',
+            data=serializer.errors
+        ).to_response()
     
     @action(detail=False, methods=['post'])
     def login(self, request):
@@ -60,11 +64,14 @@ class UserViewSet(viewsets.ModelViewSet):
                        email=user.email,
                        ip=request.META.get('REMOTE_ADDR'))
             
-            return Response({
-                'message': '登录成功',
-                'user': UserSerializer(user).data
-            })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return ApiResponse.success(
+                data={'user': UserSerializer(user).data},
+                message='登录成功'
+            ).to_response()
+        return ApiResponse.validation_error(
+            message='登录信息验证失败',
+            data=serializer.errors
+        ).to_response()
     
     @action(detail=False, methods=['get'])
     def third_party_providers(self, request):
@@ -82,27 +89,30 @@ class UserViewSet(viewsets.ModelViewSet):
                     'qr_code_url': plugin.get_qr_code_url()
                 })
         
-        return Response(providers)
+        return ApiResponse.success(
+            data={'providers': providers},
+            message='获取登录方式成功'
+        ).to_response()
     
     @action(detail=False, methods=['get'])
     def third_party_auth(self, request):
         """第三方登录跳转"""
         provider = request.GET.get('provider')
         if not provider:
-            return Response({'error': '缺少provider参数'}, status=400)
+            return ApiResponse.bad_request('缺少provider参数').to_response()
         
         try:
             config = ThirdPartyAuthConfig.objects.get(name=provider, is_enabled=True)
             plugin = plugin_manager.get_plugin(config.name, config.config)
             
             if not plugin:
-                return Response({'error': '插件不可用'}, status=400)
+                return ApiResponse.error('插件不可用').to_response()
             
             auth_url = plugin.get_auth_url()
             return redirect(auth_url)
             
         except ThirdPartyAuthConfig.DoesNotExist:
-            return Response({'error': '认证提供商不存在'}, status=404)
+            return ApiResponse.not_found('认证提供商不存在').to_response()
     
     @action(detail=False, methods=['get'])
     def third_party_callback(self, request):
@@ -111,24 +121,24 @@ class UserViewSet(viewsets.ModelViewSet):
         code = request.GET.get('code')
         
         if not provider or not code:
-            return Response({'error': '参数错误'}, status=400)
+            return ApiResponse.bad_request('参数错误').to_response()
         
         try:
             config = ThirdPartyAuthConfig.objects.get(name=provider, is_enabled=True)
             plugin = plugin_manager.get_plugin(config.name, config.config)
             
             if not plugin:
-                return Response({'error': '插件不可用'}, status=400)
+                return ApiResponse.error('插件不可用').to_response()
             
             # 获取用户信息
             user_info = plugin.get_user_info(code)
             if not user_info:
-                return Response({'error': '获取用户信息失败'}, status=400)
+                return ApiResponse.error('获取用户信息失败').to_response()
             
             # 查找或创建用户
             user = self._get_or_create_user(user_info)
             if not user:
-                return Response({'error': '用户创建失败'}, status=400)
+                return ApiResponse.error('用户创建失败').to_response()
             
             # 登录用户
             login(request, user)
@@ -138,41 +148,41 @@ class UserViewSet(viewsets.ModelViewSet):
                        provider=provider,
                        ip=request.META.get('REMOTE_ADDR'))
             
-            return Response({
-                'message': '登录成功',
-                'user': UserSerializer(user).data
-            })
+            return ApiResponse.success(
+                data={'user': UserSerializer(user).data},
+                message='登录成功'
+            ).to_response()
             
         except Exception as e:
             logger.error("第三方登录失败", provider=provider, error=str(e))
-            return Response({'error': '登录失败'}, status=500)
+            return ApiResponse.internal_error('登录失败').to_response()
     
     @action(detail=False, methods=['post'])
     def sync_users(self, request):
         """同步第三方用户"""
         provider = request.data.get('provider')
         if not provider:
-            return Response({'error': '缺少provider参数'}, status=400)
+            return ApiResponse.bad_request('缺少provider参数').to_response()
         
         try:
             config = ThirdPartyAuthConfig.objects.get(name=provider, is_enabled=True)
             plugin = plugin_manager.get_plugin(config.name, config.config)
             
             if not plugin:
-                return Response({'error': '插件不可用'}, status=400)
+                return ApiResponse.error('插件不可用').to_response()
             
             synced_count = plugin.sync_users()
             
             logger.info("用户同步完成", provider=provider, count=synced_count)
             
-            return Response({
-                'message': f'同步完成，共同步 {synced_count} 个用户',
-                'count': synced_count
-            })
+            return ApiResponse.success(
+                data={'count': synced_count},
+                message=f'同步完成，共同步 {synced_count} 个用户'
+            ).to_response()
             
         except Exception as e:
             logger.error("用户同步失败", provider=provider, error=str(e))
-            return Response({'error': '同步失败'}, status=500)
+            return ApiResponse.internal_error('同步失败').to_response()
     
     def _get_or_create_user(self, user_info):
         """获取或创建用户"""
@@ -228,13 +238,16 @@ class UserViewSet(viewsets.ModelViewSet):
                        userId=str(request.user.id),
                        email=request.user.email)
             logout(request)
-        return Response({'message': '登出成功'})
+        return ApiResponse.success(message='登出成功').to_response()
     
 
     @action(detail=False, methods=['get'])
     def profile(self, request):
         """获取当前用户信息"""
-        return Response(UserSerializer(request.user).data)
+        return ApiResponse.success(
+            data={'user': UserSerializer(request.user).data},
+            message='获取用户信息成功'
+        ).to_response()
     
     @action(detail=False, methods=['put', 'patch'])
     def update_profile(self, request):
@@ -246,13 +259,19 @@ class UserViewSet(viewsets.ModelViewSet):
             logger.info("用户资料更新", 
                        userId=str(request.user.id),
                        fields=list(request.data.keys()))
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return ApiResponse.success(
+                data={'profile': serializer.data},
+                message='用户资料更新成功'
+            ).to_response()
+        return ApiResponse.validation_error(
+            message='数据验证失败',
+            data=serializer.errors
+        ).to_response()
     
     @action(detail=False, methods=['get'])
     def my_modules(self, request):
         """获取当前用户可访问的模块"""
-        from utils.permissions import permission_checker
+        from utils.auth.permissions import permission_checker
         
         modules = permission_checker.get_user_modules(request.user)
         module_data = []
@@ -272,13 +291,16 @@ class UserViewSet(viewsets.ModelViewSet):
                 }
             })
         
-        return Response({
-            'modules': module_data,
-            'user_info': {
-                'username': request.user.username,
-                'email': request.user.email,
-                'department': request.user.department,
-                'job_title': request.user.job_title,
-                'is_superuser': request.user.is_superuser
-            }
-        })
+        return ApiResponse.success(
+            data={
+                'modules': module_data,
+                'user_info': {
+                    'username': request.user.username,
+                    'email': request.user.email,
+                    'department': request.user.department,
+                    'job_title': request.user.job_title,
+                    'is_superuser': request.user.is_superuser
+                }
+            },
+            message='获取用户模块权限成功'
+        ).to_response()
