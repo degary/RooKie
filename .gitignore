@@ -8,3 +8,4 @@ venv/
 logs/
 *.log
 .idea
+prompt.md

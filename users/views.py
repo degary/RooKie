@@ -54,18 +54,27 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'])
     def login(self, request):
         """用户登录"""
+        from rest_framework.authtoken.models import Token
+        
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data['user']
             login(request, user)
             
+            # 获取或创建Token
+            token, created = Token.objects.get_or_create(user=user)
+            
             logger.info("用户登录成功", 
                        userId=str(user.id), 
                        email=user.email,
+                       token_created=created,
                        ip=request.META.get('REMOTE_ADDR'))
             
             return ApiResponse.success(
-                data={'user': UserSerializer(user).data},
+                data={
+                    'user': UserSerializer(user).data,
+                    'token': token.key
+                },
                 message='登录成功'
             ).to_response()
         return ApiResponse.validation_error(
@@ -143,13 +152,21 @@ class UserViewSet(viewsets.ModelViewSet):
             # 登录用户
             login(request, user)
             
+            # 获取或创建Token
+            from rest_framework.authtoken.models import Token
+            token, created = Token.objects.get_or_create(user=user)
+            
             logger.info("第三方登录成功", 
                        userId=str(user.id),
                        provider=provider,
+                       token_created=created,
                        ip=request.META.get('REMOTE_ADDR'))
             
             return ApiResponse.success(
-                data={'user': UserSerializer(user).data},
+                data={
+                    'user': UserSerializer(user).data,
+                    'token': token.key
+                },
                 message='登录成功'
             ).to_response()
             
@@ -266,6 +283,53 @@ class UserViewSet(viewsets.ModelViewSet):
         return ApiResponse.validation_error(
             message='数据验证失败',
             data=serializer.errors
+        ).to_response()
+    
+    @action(detail=False, methods=['get'])
+    def get_token(self, request):
+        """获取当前用户Token"""
+        from rest_framework.authtoken.models import Token
+        
+        try:
+            token = Token.objects.get(user=request.user)
+            return ApiResponse.success(
+                data={
+                    'token': token.key,
+                    'created_at': token.created
+                },
+                message='Token获取成功'
+            ).to_response()
+        except Token.DoesNotExist:
+            return ApiResponse.not_found('Token不存在').to_response()
+    
+    @action(detail=False, methods=['post'])
+    def refresh_token(self, request):
+        """刷新Token"""
+        from rest_framework.authtoken.models import Token
+        
+        # 删除旧Token，创建新Token
+        Token.objects.filter(user=request.user).delete()
+        token = Token.objects.create(user=request.user)
+        
+        logger.info("Token刷新成功", userId=str(request.user.id))
+        
+        return ApiResponse.success(
+            data={'token': token.key},
+            message='Token刷新成功'
+        ).to_response()
+    
+    @action(detail=False, methods=['delete'])
+    def revoke_token(self, request):
+        """撤销Token"""
+        from rest_framework.authtoken.models import Token
+        
+        deleted_count = Token.objects.filter(user=request.user).delete()[0]
+        
+        logger.info("Token撤销成功", userId=str(request.user.id))
+        
+        return ApiResponse.success(
+            data={'deleted_count': deleted_count},
+            message='Token已撤销'
         ).to_response()
     
     @action(detail=False, methods=['get'])
