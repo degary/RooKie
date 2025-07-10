@@ -21,7 +21,7 @@ class WeChatWorkAuthPlugin(BaseAuthPlugin):
         """获取企业微信授权URL"""
         base_url = "https://open.work.weixin.qq.com/wwopen/oauth2/authorize"
         params = {
-            'appid': self.app_id,
+            'appid': self.corp_id,
             'redirect_uri': quote_plus(self.redirect_uri),
             'response_type': 'code',
             'scope': 'snsapi_base',
@@ -78,8 +78,8 @@ class WeChatWorkAuthPlugin(BaseAuthPlugin):
         """获取企业access_token"""
         url = "https://qyapi.weixin.qq.com/cgi-bin/gettoken"
         params = {
-            'corpid': self.config.get('corp_id'),
-            'corpsecret': self.app_secret
+            'corpid': self.corp_id,
+            'corpsecret': self.secret
         }
         
         result = self.make_request(url, params=params)
@@ -139,3 +139,8 @@ class WeChatWorkAuthPlugin(BaseAuthPlugin):
                 logger.error("同步企业微信用户失败", user=user_data, error=str(e))
         
         return synced_count
+    
+    def validate_config(self) -> bool:
+        """验证企业微信配置"""
+        required_fields = ['corp_id', 'agent_id', 'secret', 'redirect_uri']
+        return all(self.config.get(field) for field in required_fields)

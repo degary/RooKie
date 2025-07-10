@@ -17,9 +17,23 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import redirect
+from django.http import HttpResponse, HttpResponseRedirect
+from django.contrib.auth import logout
+
+def admin_login_redirect(request):
+    # 如果是第三方登录回调，不要重定向
+    if 'third_party_callback' in request.META.get('HTTP_REFERER', ''):
+        return HttpResponse('Login required', status=401)
+    # 其他情况重定向到自定义登录页
+    return redirect('/login/')
+
+def admin_logout(request):
+    logout(request)
+    return HttpResponseRedirect('/login/')
 
 urlpatterns = [
-    path('admin/login/', lambda request: redirect('/login/')),
+    path('admin/logout/', admin_logout),
+    path('admin/login/', admin_login_redirect),
     path('admin/', admin.site.urls),
     path('', include('users.urls')),
 ]

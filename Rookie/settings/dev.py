@@ -6,6 +6,15 @@ from .base import *
 DEBUG = True
 ALLOWED_HOSTS = ['*']  # 开发环境允许所有主机
 
+# CSRF 可信来源配置（支持ngrok等内网穿透工具）
+CSRF_TRUSTED_ORIGINS = [
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+    'https://*.ngrok.io',
+    'https://*.ngrok-free.app',
+    'https://*.ngrok.app',
+]
+
 # 开发环境日志配置
 LOGURU_CONFIG = {
     'console': {

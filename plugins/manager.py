@@ -31,19 +31,23 @@ class PluginManager:
     
     def register_plugin(self, plugin_class: Type[BaseAuthPlugin]):
         """注册插件"""
-        plugin_name = plugin_class.__name__.lower().replace('authplugin', '')
-        self._plugins[plugin_name] = plugin_class
-        logger.info(f"注册插件: {plugin_name}")
+        # 使用插件类的name属性作为注册名称
+        try:
+            # 创建临时实例获取name
+            temp_instance = plugin_class({})
+            plugin_name = temp_instance.name
+            self._plugins[plugin_name] = plugin_class
+            logger.info(f"注册插件: {plugin_name}")
+        except Exception as e:
+            logger.error(f"注册插件失败: {plugin_class.__name__}", error=str(e))
     
     def get_plugin(self, name: str, config: Dict) -> Optional[BaseAuthPlugin]:
         """获取插件实例"""
         self._ensure_initialized()
         
-        if name in self._instances:
-            return self._instances[name]
-        
+        # 不缓存实例，每次都创建新的（因为配置可能不同）
         if name not in self._plugins:
-            logger.error(f"插件不存在: {name}")
+            logger.error("插件不存在", plugin_name=name)
             return None
         
         try:
@@ -51,13 +55,12 @@ class PluginManager:
             instance = plugin_class(config)
             
             if not instance.validate_config():
-                logger.error(f"插件配置无效: {name}")
+                logger.error("插件配置无效", plugin_name=name)
                 return None
             
-            self._instances[name] = instance
             return instance
         except Exception as e:
-            logger.error(f"创建插件实例失败: {name}", error=str(e))
+            logger.error("创建插件实例失败", plugin_name=name, error=str(e))
             return None
     
     def get_available_plugins(self) -> List[str]:

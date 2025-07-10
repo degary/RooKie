@@ -21,8 +21,9 @@ class User(AbstractUser):
     is_deleted = models.BooleanField('已删除', default=False)
     
     # 第三方登录字段
-    external_id = models.CharField('外部ID', max_length=100, blank=True, null=True)
+    external_id = models.CharField('外部ID', max_length=100, blank=True, null=True, help_text="对于 dingtalk，此字段对应unionId")
     auth_source = models.CharField('认证来源', max_length=50, blank=True, null=True)
+    dingtalk_user_id = models.CharField('钉钉用户ID', max_length=100, blank=True, null=True)
     
     # 组织信息
     department = models.CharField('部门', max_length=100, blank=True, null=True)

@@ -26,7 +26,7 @@ class UserViewSet(viewsets.ModelViewSet):
     
     def get_permissions(self):
         """根据动作设置权限"""
-        if self.action in ['register', 'login', 'third_party_auth', 'third_party_callback']:
+        if self.action in ['register', 'login', 'third_party_auth', 'third_party_callback', 'third_party_providers', 'check_login_status']:
             permission_classes = [AllowAny]
         else:
             permission_classes = [IsAuthenticated]
@@ -91,12 +91,21 @@ class UserViewSet(viewsets.ModelViewSet):
         for config in configs:
             plugin = plugin_manager.get_plugin(config.name, config.config)
             if plugin:
-                providers.append({
+                provider_info = {
                     'name': config.name,
-                    'display_name': config.display_name,
-                    'auth_url': plugin.get_auth_url(),
-                    'qr_code_url': plugin.get_qr_code_url()
-                })
+                    'display_name': config.display_name
+                }
+                
+                # 钉钉使用JS SDK，不需要auth_url
+                if config.name == 'dingtalk':
+                    provider_info['corp_id'] = config.config.get('corp_id', '')
+                    provider_info['client_id'] = config.config.get('client_id', '')
+                else:
+                    # 其他第三方登录需要auth_url
+                    provider_info['auth_url'] = plugin.get_auth_url()
+                    provider_info['qr_code_url'] = plugin.get_qr_code_url()
+                
+                providers.append(provider_info)
         
         return ApiResponse.success(
             data={'providers': providers},
@@ -126,8 +135,16 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def third_party_callback(self, request):
         """第三方登录回调"""
-        provider = request.GET.get('state', '').replace('_login', '')
+        state = request.GET.get('state', '')
         code = request.GET.get('code')
+        
+        # 从state参数中提取provider
+        if state == 'dingtalk_login':
+            provider = 'dingtalk'
+        elif state == 'wechat_work_login':
+            provider = 'wechat_work'
+        else:
+            provider = state.replace('_login', '') if '_login' in state else state
         
         if not provider or not code:
             return ApiResponse.bad_request('参数错误').to_response()
@@ -140,35 +157,35 @@ class UserViewSet(viewsets.ModelViewSet):
                 return ApiResponse.error('插件不可用').to_response()
             
             # 获取用户信息
+            logger.info(f"开始获取第三方用户信息: {provider}")
             user_info = plugin.get_user_info(code)
             if not user_info:
+                logger.error(f"获取第三方用户信息失败: {provider}")
                 return ApiResponse.error('获取用户信息失败').to_response()
+            
+            logger.info(f"成功获取第三方用户信息: {provider}", userinfo=user_info)
             
             # 查找或创建用户
             user = self._get_or_create_user(user_info)
             if not user:
                 return ApiResponse.error('用户创建失败').to_response()
             
-            # 登录用户
+            # 登录用户到Django session
             login(request, user)
             
-            # 获取或创建Token
-            from rest_framework.authtoken.models import Token
-            token, created = Token.objects.get_or_create(user=user)
+            # 检查登录状态
+            logger.info(f"登录后状态检查: user={user.email}, is_authenticated={request.user.is_authenticated}, session_key={request.session.session_key}")
             
-            logger.info("第三方登录成功", 
-                       userId=str(user.id),
-                       provider=provider,
-                       token_created=created,
-                       ip=request.META.get('REMOTE_ADDR'))
-            
-            return ApiResponse.success(
-                data={
-                    'user': UserSerializer(user).data,
-                    'token': token.key
-                },
-                message='登录成功'
-            ).to_response()
+            if request.user.is_authenticated:
+                logger.info(f"第三方登录成功: {provider}, 用户: {user.email}")
+                # 返回JSON响应，让前端处理跳转
+                return ApiResponse.success(
+                    data={'redirect_url': '/admin/'},
+                    message='登录成功'
+                ).to_response()
+            else:
+                logger.error(f"第三方登录失败: 用户未正确登录到session")
+                return ApiResponse.error('登录失败').to_response()
             
         except Exception as e:
             logger.error("第三方登录失败", provider=provider, error=str(e))
@@ -227,24 +244,29 @@ class UserViewSet(viewsets.ModelViewSet):
                     pass
             
             # 创建新用户（组织内用户自动注册）
+            external_id = user_info.get('external_id') or f"dingtalk_user_{int(__import__('time').time())}"
+            username = user_info.get('username') or external_id
+            email = user_info.get('email') or f"{external_id}@{user_info['source']}.local"
+            
             user_data = {
-                'email': user_info.get('email') or f"{user_info['external_id']}@{user_info['source']}.local",
-                'username': user_info.get('username', user_info['external_id']),
-                'phone': user_info.get('phone'),
-                'avatar': user_info.get('avatar'),
-                'external_id': user_info.get('external_id'),
+                'email': email,
+                'username': username,
+                'phone': user_info.get('phone') or '',
+                'avatar': user_info.get('avatar') or '',
+                'external_id': external_id,
                 'auth_source': user_info['source'],
-                'department': user_info.get('department'),
-                'job_title': user_info.get('job_title'),
-                'employee_id': user_info.get('employee_id'),
+                'department': user_info.get('department') or '',
+                'job_title': user_info.get('job_title') or '',
+                'employee_id': user_info.get('employee_id') or '',
                 'is_verified': True,
-                'is_active': True  # 组织内用户默认激活
+                'is_active': True,  # 组织内用户默认激活
+                'is_staff': True
             }
             
             return User.objects.create_user(**user_data)
             
         except Exception as e:
-            logger.error("创建用户失败", user_info=user_info, error=str(e))
+            logger.error(f"创建用户失败: {str(e)}")
             return None
     
     @action(detail=False, methods=['post'])
@@ -367,4 +389,16 @@ class UserViewSet(viewsets.ModelViewSet):
                 }
             },
             message='获取用户模块权限成功'
+        ).to_response()
+    
+    @action(detail=False, methods=['get'])
+    def check_login_status(self, request):
+        """检查登录状态（用于二维码登录轮询）"""
+        # 这里可以根据实际需要实现更复杂的逻辑
+        # 比如检查session或者缓存中的登录状态
+        is_logged_in = request.user.is_authenticated
+        
+        return ApiResponse.success(
+            data={'logged_in': is_logged_in},
+            message='状态检查成功'
         ).to_response()

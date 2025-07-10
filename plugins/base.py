@@ -14,9 +14,16 @@ class BaseAuthPlugin(ABC):
     
     def __init__(self, config: Dict[str, Any]):
         self.config = config
+        self.redirect_uri = config.get('redirect_uri')
+        
+        # 不同平台使用不同的字段名称
         self.app_id = config.get('app_id')
         self.app_secret = config.get('app_secret')
-        self.redirect_uri = config.get('redirect_uri')
+        self.client_id = config.get('client_id')
+        self.client_secret = config.get('client_secret')
+        self.corp_id = config.get('corp_id')
+        self.agent_id = config.get('agent_id')
+        self.secret = config.get('secret')
     
     @property
     @abstractmethod
@@ -51,8 +58,12 @@ class BaseAuthPlugin(ABC):
     
     def validate_config(self) -> bool:
         """验证配置是否有效"""
-        required_fields = ['app_id', 'app_secret', 'redirect_uri']
-        return all(self.config.get(field) for field in required_fields)
+        # 基本验证：至少需要redirect_uri
+        if not self.config.get('redirect_uri'):
+            return False
+        
+        # 针对不同平台的特定验证由子类实现
+        return True
     
     def make_request(self, url: str, method: str = 'GET', **kwargs) -> Optional[Dict]:
         """统一的HTTP请求方法"""

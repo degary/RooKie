@@ -54,6 +54,7 @@ Rookie 是一个开箱即用的 Django Web 应用项目模板，专为企业级�
 - [❓ 常见问题](troubleshooting/common-issues.md) - FAQ和解决方案
 - [🚨 错误码说明](troubleshooting/error-codes.md) - 错误码含义和处理
 - [🐛 调试指南](troubleshooting/debugging.md) - 调试技巧和工具
+- [🌐 ngrok配置指南](troubleshooting/ngrok-setup.md) - 内网穿透配置和使用
 
 ## 📚 参考资料
 

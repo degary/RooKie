@@ -163,8 +163,8 @@
         }
         
         .qr-code {
-            width: 200px;
-            height: 200px;
+            width: 250px;
+            height: 250px;
             border: 1px solid #e9ecef;
             border-radius: 8px;
             margin: 0 auto 20px;
@@ -172,6 +172,8 @@
             align-items: center;
             justify-content: center;
             background: #f8f9fa;
+            position: relative;
+            z-index: 10;
         }
         
         .qr-placeholder {
@@ -369,6 +371,7 @@
                 const data = await response.json();
                 
                 if (data.success) {
+                    // 登录成功，跳转到管理后台
                     window.location.href = '/admin/';
                 } else {
                     errorDiv.textContent = data.message || '登录失败';
@@ -380,50 +383,266 @@
             }
         });
         
+        let providersData = null;
+        let isLoadingProviders = false;
+        
         // 加载扫码登录提供商
         async function loadQRProviders() {
+            if (providersData || isLoadingProviders) {
+                return; // 已加载过或正在加载，不重复加载
+            }
+            
+            isLoadingProviders = true;
+            
             try {
                 const response = await fetch('/api/users/third_party_providers/');
                 const data = await response.json();
+                providersData = data;
                 
                 const container = document.getElementById('qr-providers');
                 
                 if (data.success && data.data.providers.length > 0) {
-                    container.innerHTML = data.data.providers.map(provider => 
-                        `<button class="provider-btn" onclick="selectProvider('${provider.name}')">${provider.display_name}</button>`
-                    ).join('');
+                    if (data.data.providers.length === 1) {
+                        // 只有一个提供商，直接显示二维码
+                        const provider = data.data.providers[0];
+                        container.innerHTML = '';
+                        // 等待加载完成后再调用selectProvider
+                        setTimeout(() => selectProvider(provider.name), 100);
+                    } else {
+                        // 多个提供商，显示选择按钮
+                        container.innerHTML = data.data.providers.map(provider => 
+                            `<button class="provider-btn" onclick="selectProvider('${provider.name}')">${provider.display_name}</button>`
+                        ).join('');
+                    }
                 } else {
                     container.innerHTML = '<div class="qr-placeholder">暂无可用的扫码登录方式</div>';
                 }
             } catch (error) {
+                console.error('加载提供商失败:', error);
                 document.getElementById('qr-providers').innerHTML = '<div class="qr-placeholder">加载失败</div>';
+            } finally {
+                isLoadingProviders = false;
             }
         }
         
         // 选择登录提供商
         function selectProvider(provider) {
-            // 更新按钮状态
-            document.querySelectorAll('.provider-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            // 防止重复点击
+            if (currentProvider === provider) {
+                return;
+            }
+            
+            // 更新按钮状态（只有在有多个提供商时才更新）
+            if (event && event.target) {
+                document.querySelectorAll('.provider-btn').forEach(btn => btn.classList.remove('active'));
+                event.target.classList.add('active');
+            }
             
             currentProvider = provider;
             generateQR(provider);
         }
         
+        let isGenerating = false;
+        
         // 生成二维码
-        function generateQR(provider) {
+        async function generateQR(provider) {
+            if (isGenerating) {
+                return;
+            }
+            
+            isGenerating = true;
             const qrCode = document.getElementById('qr-code');
             const status = document.getElementById('qr-status');
             const refreshBtn = document.getElementById('refresh-btn');
             
-            // 跳转到第三方登录
-            window.location.href = `/api/users/third_party_auth/?provider=${provider}`;
+            try {
+                qrCode.innerHTML = '<div class="qr-placeholder">正在生成二维码...</div>';
+                
+                // 使用缓存的数据，避免重复请求
+                if (providersData && providersData.success) {
+                    const providerData = providersData.data.providers.find(p => p.name === provider);
+                    if (providerData) {
+                        // 生成二维码，传递provider配置
+                        await generateQRCode(providerData.auth_url, qrCode, providerData);
+                        
+                        // 显示状态
+                        status.textContent = '请使用' + providerData.display_name + 'APP扫码登录';
+                        status.className = 'qr-status status-waiting';
+                        status.style.display = 'block';
+                        
+                        // 钉钉使用JS SDK，不需要刷新按钮
+                        if (provider === 'dingtalk') {
+                            refreshBtn.style.display = 'none';
+                        } else {
+                            refreshBtn.style.display = 'block';
+                        }
+                        
+                        // 如果只有一个提供商，隐藏选择按钮区域
+                        if (providersData.data.providers.length === 1) {
+                            document.getElementById('qr-providers').style.display = 'none';
+                        }
+                        
+                        // 钉钉使用JS SDK回调，其他方式使用轮询
+                        if (provider !== 'dingtalk') {
+                            startPolling(provider);
+                        }
+                    }
+                } else {
+                    throw new Error('没有可用的提供商数据');
+                }
+            } catch (error) {
+                qrCode.innerHTML = '<div class="qr-placeholder">生成二维码失败</div>';
+                status.textContent = '生成二维码失败，请重试';
+                status.className = 'qr-status status-error';
+                status.style.display = 'block';
+            } finally {
+                isGenerating = false;
+            }
+        }
+        
+        // 使用钉钉JS SDK生成二维码
+        async function generateQRCode(url, container, providerData) {
+            if (currentProvider === 'dingtalk') {
+                // 使用钉钉官方JS SDK
+                generateDingTalkQR(container, providerData);
+            } else {
+                // 其他第三方登录使用链接方式
+                container.innerHTML = `
+                    <div style="padding: 20px; text-align: center; font-size: 14px; line-height: 1.6;">
+                        <a href="${url}" 
+                           style="display: inline-block; padding: 10px 20px; background: #1890ff; color: white; text-decoration: none; border-radius: 6px; font-size: 14px;"
+                           onmouseover="this.style.background='#40a9ff'" 
+                           onmouseout="this.style.background='#1890ff'">
+                            点击这里登录
+                        </a>
+                    </div>
+                `;
+            }
+        }
+        
+        // 生成钉钉二维码
+        function generateDingTalkQR(container, providerData) {
+            console.log('开始生成钉钉二维码');
+            // 清空容器
+            container.innerHTML = '';
+            container.id = 'dingtalk-qr-container';
+            
+            // 检查回调地址
+            const redirectUri = window.location.origin + '/api/users/third_party_callback/';
+            console.log('回调地址:', redirectUri);
+            
+            // 加载钉钉JS SDK
+            if (!window.DTFrameLogin) {
+                const script = document.createElement('script');
+                script.src = 'https://g.alicdn.com/dingding/h5-dingtalk-login/0.21.0/ddlogin.js';
+                script.onload = function() {
+                    console.log('钉钉SDK加载成功');
+                    initDingTalkQR(container, providerData);
+                };
+                script.onerror = function() {
+                    console.error('钉钉SDK加载失败');
+                    container.innerHTML = '<div class="qr-placeholder">SDK加载失败</div>';
+                };
+                document.head.appendChild(script);
+            } else {
+                initDingTalkQR(container, providerData);
+            }
+        }
+        
+        // 初始化钉钉二维码
+        function initDingTalkQR(container, providerData) {
+            try {
+                window.DTFrameLogin(
+                    {
+                        id: 'dingtalk-qr-container',
+                        width: 240,
+                        height: 240,
+                    },
+                    {
+                        redirect_uri: encodeURIComponent(window.location.origin + '/api/users/third_party_callback/'),
+                        client_id: providerData.client_id || 'dingrehaljoz9kdseprl',
+                        scope: 'openid corpid',
+                        response_type: 'code',
+                        state: 'dingtalk_login',
+                        prompt: 'consent',
+                        corpId: providerData.corp_id || ''
+                    },
+                    (loginResult) => {
+                        console.log('钉钉登录成功:', loginResult);
+                        const {authCode, state} = loginResult;
+                        if (authCode) {
+                            // 使用AJAX调用后端接口获取token
+                            handleDingTalkLogin(authCode, state);
+                        }
+                    },
+                    (errorMsg) => {
+                        console.error('钉钉登录错误:', errorMsg);
+                        const statusEl = document.getElementById('qr-status');
+                        if (statusEl) {
+                            statusEl.textContent = `登录失败: ${errorMsg}`;
+                            statusEl.className = 'qr-status status-error';
+                            statusEl.style.display = 'block';
+                        }
+                    }
+                );
+            } catch (error) {
+                console.error('初始化钉钉二维码失败:', error);
+                container.innerHTML = '<div class="qr-placeholder">二维码初始化失败</div>';
+            }
+        }
+        
+        // 轮询登录状态（仅用于非钉钉登录方式）
+        function startPolling(provider) {
+            if (statusInterval) {
+                clearInterval(statusInterval);
+            }
+            
+            statusInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/users/check_login_status/?provider=${provider}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success && data.data.logged_in) {
+                            clearInterval(statusInterval);
+                            document.getElementById('qr-status').textContent = '登录成功，正在跳转...';
+                            document.getElementById('qr-status').className = 'qr-status status-success';
+                            setTimeout(() => {
+                                window.location.href = '/admin/';
+                            }, 1000);
+                        }
+                    }
+                } catch (error) {
+                    // 忽略轮询错误
+                }
+            }, 2000); // 每2秒检查一次
         }
         
         // 刷新二维码
         function refreshQR() {
             if (currentProvider) {
                 generateQR(currentProvider);
+            }
+        }
+        
+        // 处理钉钉登录
+        async function handleDingTalkLogin(authCode, state) {
+            try {
+                const response = await fetch(`/api/users/third_party_callback/?code=${authCode}&state=${state}`, {
+                    method: 'GET',
+                    credentials: 'include', // 包含session cookie
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    // 登录成功，跳转到指定地址
+                    window.location.href = data.data.redirect_url || '/admin/';
+                } else {
+                    alert('登录失败: ' + (data.message || '未知错误'));
+                }
+            } catch (error) {
+                console.error('登录请求失败:', error);
+                alert('登录请求失败，请重试');
             }
         }
         

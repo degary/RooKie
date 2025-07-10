@@ -84,26 +84,56 @@ class ThirdPartyAuthConfigAdmin(admin.ModelAdmin):
             <h4 style="color: #27ae60;">📦 钉钉配置示例 (name: dingtalk):</h4>
             <pre style="background: #e8f5e8; padding: 12px; border-radius: 6px; border-left: 4px solid #27ae60;">{
   "app_id": "dingoa123456789",
-  "app_secret": "your_dingtalk_app_secret",
-  "redirect_uri": "http://127.0.0.1:8000/api/users/third_party_callback/",
-  "corp_id": "ding123456789"
+  "client_id": "dingoa987654321",
+  "client_secret": "your_dingtalk_client_secret",
+  "agent_id": "1000001",
+  "corp_id": "ding123456789abcdef",
+  "redirect_uri": "https://your-domain.com/api/users/third_party_callback/"
 }</pre>
+            <p style="margin: 8px 0; color: #666;">
+                <strong>参数说明:</strong><br>
+                • app_id: 新版App ID<br>
+                • client_id: 原AppKey，用于OAuth授权<br>
+                • client_secret: 原AppSecret，用于OAuth授权<br>
+                • agent_id: 企业内部应用ID（可选）<br>
+                • corp_id: 企业ID
+            </p>
             <p style="margin: 8px 0; color: #666;"><strong>获取方式:</strong> 钉钉开放平台 > 应用开发 > 创建应用</p>
             
             <h4 style="color: #3498db;">📱 企业微信配置示例 (name: wechat_work):</h4>
             <pre style="background: #e8f4fd; padding: 12px; border-radius: 6px; border-left: 4px solid #3498db;">{
-  "app_id": "ww123456789abcdef",
-  "app_secret": "your_wechat_work_secret",
-  "redirect_uri": "http://127.0.0.1:8000/api/users/third_party_callback/",
-  "corp_id": "ww123456789abcdef"
+  "corp_id": "ww123456789abcdef",
+  "agent_id": "1000001",
+  "secret": "your_wechat_work_secret",
+  "redirect_uri": "https://your-domain.com/api/users/third_party_callback/"
 }</pre>
+            <p style="margin: 8px 0; color: #666;">
+                <strong>参数说明:</strong><br>
+                • corp_id: 企业ID<br>
+                • agent_id: 应用ID<br>
+                • secret: 应用Secret
+            </p>
             <p style="margin: 8px 0; color: #666;"><strong>获取方式:</strong> 企业微信管理后台 > 应用管理 > 创建应用</p>
+            
+            <h4 style="color: #9b59b6;">🐦 飞书配置示例 (name: feishu):</h4>
+            <pre style="background: #f4f0ff; padding: 12px; border-radius: 6px; border-left: 4px solid #9b59b6;">{
+  "app_id": "cli_a123456789abcdef",
+  "app_secret": "your_feishu_app_secret",
+  "redirect_uri": "https://your-domain.com/api/users/third_party_callback/"
+}</pre>
+            <p style="margin: 8px 0; color: #666;">
+                <strong>参数说明:</strong><br>
+                • app_id: 应用ID<br>
+                • app_secret: 应用密钥
+            </p>
+            <p style="margin: 8px 0; color: #666;"><strong>获取方式:</strong> 飞书开放平台 > 开发者后台 > 创建企业自建应用</p>
             
             <h4 style="color: #e74c3c;">⚠️ 注意事项:</h4>
             <ul style="color: #666; line-height: 1.6;">
                 <li>请确保 JSON 格式正确，可使用在线 JSON 校验工具</li>
-                <li>redirect_uri 必须与第三方平台配置的回调地址一致</li>
-                <li>生产环境请修改为实际域名</li>
+                <li>redirect_uri 必须是<strong>公网可访问的地址</strong>，与第三方平台配置一致</li>
+                <li>推荐使用 HTTPS 协议保证安全</li>
+                <li>本地开发可使用 ngrok 等内网穿透工具</li>
                 <li>保存后请测试登录功能是否正常</li>
             </ul>
         </div>

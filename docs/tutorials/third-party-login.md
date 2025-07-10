@@ -48,10 +48,22 @@
 
 ### 2. 获取应用凭证
 
+#### 钉钉凭证说明
+钉钉应用有四个凭证参数：
+
+| 钉钉凭证 | 项目配置字段 | 说明 |
+|---------|------------|------|
+| **App ID** | `app_id` | 新版应用标识符 |
+| **Client ID** | `client_id` | 原 AppKey/SuiteKey，用于OAuth授权 |
+| **Client Secret** | `client_secret` | 原 AppSecret/SuiteSecret，用于OAuth授权 |
+| **AgentId** | `agent_id` | 企业内部应用ID（可选） |
+
 #### 记录关键信息
 ```
-AppKey (应用ID): dingoa123456789
-AppSecret (应用密钥): your_dingtalk_app_secret
+App ID: dingoa123456789
+Client ID: dingoa987654321  # 原 AppKey
+Client Secret: your_dingtalk_client_secret  # 原 AppSecret
+AgentId: 1000001  # 企业内部应用ID（可选）
 ```
 
 #### 配置服务器出口IP
@@ -87,12 +99,22 @@ http://127.0.0.1:8000/admin/users/thirdpartyauthconfig/
   "is_enabled": true,
   "config": {
     "app_id": "dingoa123456789",
-    "app_secret": "your_dingtalk_app_secret",
+    "client_id": "dingoa987654321",
+    "client_secret": "your_dingtalk_client_secret",
+    "agent_id": "1000001",
     "corp_id": "ding123456789abcdef",
     "redirect_uri": "https://your-domain.com/api/users/third_party_callback/"
   }
 }
 ```
+
+**参数说明**:
+- `app_id`: 新版App ID
+- `client_id`: 原AppKey，用于OAuth授权
+- `client_secret`: 原AppSecret，用于OAuth授权
+- `agent_id`: 企业内部应用ID（可选）
+- `corp_id`: 企业ID
+- `redirect_uri`: 回调地址
 
 ### 5. 测试钉钉登录
 
