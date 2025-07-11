@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, UserProfile, ThirdPartyAuthConfig, SystemModule, ModulePermission
+from .models import User, UserProfile, ThirdPartyAuthConfig, SystemModule, ModulePermission, Department
 from .forms import ThirdPartyAuthConfigForm
 
 
@@ -8,14 +8,16 @@ from .forms import ThirdPartyAuthConfigForm
 class UserAdmin(BaseUserAdmin):
     """用户管理"""
     
-    list_display = ('email', 'username', 'is_verified', 'is_active', 'created_at')
-    list_filter = ('is_verified', 'is_active', 'is_staff', 'created_at')
-    search_fields = ('email', 'username', 'phone')
+    list_display = ('email', 'username', 'get_departments', 'job_title', 'is_verified', 'is_active', 'created_at')
+    list_filter = ('is_verified', 'is_active', 'is_staff', 'auth_source', 'created_at')
+    search_fields = ('email', 'username', 'phone', 'department', 'employee_id')
+    filter_horizontal = ('departments',)
     ordering = ('-created_at',)
     
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         ('个人信息', {'fields': ('username', 'phone', 'avatar')}),
+        ('组织信息', {'fields': ('department', 'departments', 'job_title', 'employee_id', 'auth_source', 'external_id')}),
         ('权限', {'fields': ('is_active', 'is_verified', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('重要日期', {'fields': ('last_login', 'date_joined')}),
     )
@@ -26,6 +28,10 @@ class UserAdmin(BaseUserAdmin):
             'fields': ('email', 'username', 'password1', 'password2'),
         }),
     )
+    
+    def get_departments(self, obj):
+        return ', '.join([dept.name for dept in obj.departments.all()[:3]]) or obj.department or '-'
+    get_departments.short_description = '部门'
 
 
 @admin.register(UserProfile)
@@ -35,6 +41,30 @@ class UserProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'nickname', 'gender', 'location', 'created_at')
     list_filter = ('gender', 'created_at')
     search_fields = ('user__email', 'nickname', 'location')
+
+
+@admin.register(Department)
+class DepartmentAdmin(admin.ModelAdmin):
+    """部门管理"""
+    
+    list_display = ('name', 'external_id', 'parent_id', 'source', 'order', 'is_active')
+    list_filter = ('source', 'is_active')
+    search_fields = ('name', 'external_id')
+    ordering = ('source', 'order', 'name')
+    readonly_fields = ('created_at', 'updated_at')
+    
+    fieldsets = (
+        ('基本信息', {
+            'fields': ('name', 'external_id', 'parent_id', 'source')
+        }),
+        ('配置信息', {
+            'fields': ('order', 'is_active')
+        }),
+        ('时间信息', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
 
 
 @admin.register(ThirdPartyAuthConfig)

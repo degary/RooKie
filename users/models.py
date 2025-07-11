@@ -27,6 +27,7 @@ class User(AbstractUser):
     
     # 组织信息
     department = models.CharField('部门', max_length=100, blank=True, null=True)
+    departments = models.ManyToManyField('Department', blank=True, verbose_name='所属部门')
     job_title = models.CharField('职位', max_length=100, blank=True, null=True)
     employee_id = models.CharField('工号', max_length=50, blank=True, null=True)
     
@@ -49,6 +50,27 @@ class User(AbstractUser):
         
     def __str__(self):
         return self.email
+
+
+class Department(models.Model):
+    """部门模型"""
+    name = models.CharField(max_length=100, verbose_name='部门名称')
+    external_id = models.CharField(max_length=100, verbose_name='外部ID')
+    parent_id = models.CharField(max_length=100, blank=True, null=True, verbose_name='父部门ID')
+    source = models.CharField(max_length=50, verbose_name='来源系统')
+    order = models.IntegerField(default=0, verbose_name='排序')
+    is_active = models.BooleanField(default=True, verbose_name='是否启用')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+
+    class Meta:
+        db_table = 'users_department'
+        verbose_name = '部门'
+        verbose_name_plural = '部门'
+        unique_together = ['external_id', 'source']
+
+    def __str__(self):
+        return self.name
 
 
 class UserProfile(models.Model):

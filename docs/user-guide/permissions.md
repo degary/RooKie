@@ -245,7 +245,7 @@ import requests
 def test_permissions():
     # 登录获取Token
     response = requests.post('http://127.0.0.1:8000/api/users/login/', json={
-        'email': 'user@example.com',
+        'email': 'admin@example.com',
         'password': 'password123'
     })
     token = response.json()['data']['token']

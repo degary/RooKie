@@ -29,11 +29,14 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    #'utils.middleware.ApiCsrfExemptMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# API路径不需要CSRF保护
+#CSRF_EXEMPT_URLS = [r'^/api/']
 
 ROOT_URLCONF = 'Rookie.urls'
 

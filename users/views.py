@@ -5,6 +5,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import login, logout
 from django.shortcuts import redirect
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from utils.logger import get_logger
 from utils.response import ApiResponse
 from plugins.manager import plugin_manager
@@ -22,9 +24,10 @@ class UserViewSet(viewsets.ModelViewSet):
     
     queryset = User.objects.active_users()
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = []
     
     def get_permissions(self):
+        logger.info("检查权限",action=self.action)
         """根据动作设置权限"""
         if self.action in ['register', 'login', 'third_party_auth', 'third_party_callback', 'third_party_providers', 'check_login_status']:
             permission_classes = [AllowAny]
@@ -54,6 +57,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'])
     def login(self, request):
         """用户登录"""
+        logger.info(f"Login request: action={self.action}, method={request.method}, path={request.path}")
         from rest_framework.authtoken.models import Token
         
         serializer = UserLoginSerializer(data=request.data)
@@ -193,7 +197,13 @@ class UserViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['post'])
     def sync_users(self, request):
-        """同步第三方用户"""
+        """同步第三方用户（仅管理员可用）"""
+        # 使用项目权限系统检查权限
+        from utils.auth.permissions import permission_checker
+        
+        if not permission_checker.has_module_permission(request.user, 'user_management', 'change'):
+            return ApiResponse.forbidden('您没有用户管理模块的修改权限').to_response()
+        
         provider = request.data.get('provider')
         if not provider:
             return ApiResponse.bad_request('缺少provider参数').to_response()
@@ -207,7 +217,7 @@ class UserViewSet(viewsets.ModelViewSet):
             
             synced_count = plugin.sync_users()
             
-            logger.info("用户同步完成", provider=provider, count=synced_count)
+            logger.info(f"管理员 {request.user.email} 执行用户同步完成", provider=provider, count=synced_count)
             
             return ApiResponse.success(
                 data={'count': synced_count},
