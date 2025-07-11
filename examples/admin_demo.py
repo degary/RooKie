@@ -8,13 +8,17 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+
 # 设置Django环境
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Rookie.settings.dev')
+env = os.environ.get('DJANGO_ENV', 'dev')
+settings_module = 'Rookie.settings.' + env
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', settings_module)
+
 
 import django
 django.setup()
 
-from users.models import User, UserProfile, UserLoginLog
+from users.models import User, UserProfile
 from django.contrib.auth.models import Group, Permission
 
 def create_demo_data():
@@ -68,22 +72,14 @@ def create_demo_data():
                     'location': '北京市'
                 }
             )
-            
-            # 创建登录日志
-            UserLoginLog.objects.create(
-                user=user,
-                ip_address='127.0.0.1',
-                user_agent='Mozilla/5.0 (Demo Browser)',
-                is_success=True
-            )
+
             
             print(f"✅ 创建用户: {user.email}")
     
     print(f"\n🎉 演示数据创建完成!")
     print(f"📊 用户总数: {User.objects.count()}")
     print(f"📋 用户资料: {UserProfile.objects.count()}")
-    print(f"📝 登录日志: {UserLoginLog.objects.count()}")
-    
+
     print(f"\n🔑 登录信息:")
     print(f"   超级用户: admin@example.com / password123")
     print(f"   普通用户: user1@example.com / password123")

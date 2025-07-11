@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=rookie
+      - POSTGRES_USER=rookie
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-rookie123}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  web:
+    build: .
+    expose:
+      - "8000"
+    environment:
+      - DJANGO_ENV=prod
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-here}
+      - DEBUG=False
+      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,d7823be87e37.ngrok-free.app
+      - DB_HOST=db
+      - DB_NAME=rookie
+      - DB_USER=rookie
+      - DB_PASSWORD=${DB_PASSWORD:-rookie123}
+    volumes:
+      - ./logs:/app/logs
+      - static_volume:/app/staticfiles
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - static_volume:/app/staticfiles
+    depends_on:
+      - web
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  static_volume:

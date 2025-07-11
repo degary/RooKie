@@ -6,6 +6,15 @@ from .base import *
 DEBUG = True
 ALLOWED_HOSTS = ['*']  # 开发环境允许所有主机
 
+# Database
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+
 # CSRF 可信来源配置（支持ngrok等内网穿透工具）
 CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
