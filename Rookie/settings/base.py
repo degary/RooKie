@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'drf_spectacular',
     'users',
 ]
 
@@ -29,14 +30,11 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    #'utils.middleware.ApiCsrfExemptMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# API路径不需要CSRF保护
-#CSRF_EXEMPT_URLS = [r'^/api/']
 
 ROOT_URLCONF = 'Rookie.urls'
 
@@ -104,7 +102,30 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'EXCEPTION_HANDLER': 'utils.response.exceptions.custom_exception_handler'
+}
+
+# DRF Spectacular Settings
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Rookie API',
+    'DESCRIPTION': '企业级Django Web应用API文档',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SCHEMA_PATH_PREFIX': '',
+    # 使用国内CDN
+    'SWAGGER_UI_DIST': '/static/swagger-ui/',
+    'REDOC_DIST': '/static/redoc/',
+    # 认证配置
+    'SECURITY': [
+        {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization',
+            'description': 'Token认证，格式：Token <your_token>'
+        }
+    ],
 }
 
 # 登录设置

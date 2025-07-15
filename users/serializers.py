@@ -66,3 +66,11 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id', 'email', 'username', 'phone', 'avatar', 
                  'is_verified', 'created_at', 'last_login', 'profile')
         read_only_fields = ('id', 'created_at', 'last_login', 'is_verified')
+
+
+class SyncUsersSerializer(serializers.Serializer):
+    """同步用户请求序列化器"""
+    provider = serializers.CharField(
+        max_length=50,
+        help_text="第三方提供商名称，如：dingtalk"
+    )

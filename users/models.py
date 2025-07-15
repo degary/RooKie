@@ -47,6 +47,7 @@ class User(AbstractUser):
         db_table = 'users'
         verbose_name = '用户'
         verbose_name_plural = '用户'
+        ordering = ['-created_at']
         
     def __str__(self):
         return self.email

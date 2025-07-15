@@ -1,19 +1,16 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import login, logout
 from django.shortcuts import redirect
-from django.urls import reverse
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from utils.logger import get_logger
 from utils.response import ApiResponse
 from plugins.manager import plugin_manager
 from .models import User, UserProfile, ThirdPartyAuthConfig
 from .serializers import (
     UserSerializer, UserRegistrationSerializer, 
-    UserLoginSerializer, UserProfileSerializer
+    UserLoginSerializer, UserProfileSerializer, SyncUsersSerializer
 )
 
 logger = get_logger()
@@ -27,14 +24,22 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = []
     
     def get_permissions(self):
-        logger.info("检查权限",action=self.action)
+        logger.debug(f"检查权限: action={self.action}, path={self.request.path if hasattr(self, 'request') else 'unknown'}")
         """根据动作设置权限"""
         if self.action in ['register', 'login', 'third_party_auth', 'third_party_callback', 'third_party_providers', 'check_login_status']:
             permission_classes = [AllowAny]
+            logger.debug(f"动作 {self.action} 使用 AllowAny 权限")
         else:
             permission_classes = [IsAuthenticated]
+            logger.debug(f"动作 {self.action} 使用 IsAuthenticated 权限")
         return [permission() for permission in permission_classes]
     
+    @extend_schema(
+        request=UserRegistrationSerializer,
+        responses={201: UserSerializer},
+        summary="用户注册",
+        description="创建新用户账户"
+    )
     @action(detail=False, methods=['post'])
     def register(self, request):
         """用户注册"""
@@ -54,10 +59,18 @@ class UserViewSet(viewsets.ModelViewSet):
             data=serializer.errors
         ).to_response()
     
+    @extend_schema(
+        request=UserLoginSerializer,
+        responses={200: UserSerializer},
+        summary="用户登录",
+        description="通过邮箱和密码进行用户登录"
+    )
     @action(detail=False, methods=['post'])
     def login(self, request):
         """用户登录"""
-        logger.info(f"Login request: action={self.action}, method={request.method}, path={request.path}")
+        logger.debug(f"Login request: action={self.action}, method={request.method}, path={request.path}, user={request.user}, authenticated={request.user.is_authenticated}")
+        logger.debug(f"Request headers: {repr(dict(request.headers))}")
+        logger.debug(f"Request data: {repr(request.data)}")
         from rest_framework.authtoken.models import Token
         
         serializer = UserLoginSerializer(data=request.data)
@@ -86,6 +99,11 @@ class UserViewSet(viewsets.ModelViewSet):
             data=serializer.errors
         ).to_response()
     
+    @extend_schema(
+        responses={200: dict},
+        summary="获取第三方登录提供商",
+        description="获取可用的第三方登录方式列表"
+    )
     @action(detail=False, methods=['get'])
     def third_party_providers(self, request):
         """获取可用的第三方登录提供商"""
@@ -116,6 +134,20 @@ class UserViewSet(viewsets.ModelViewSet):
             message='获取登录方式成功'
         ).to_response()
     
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name='provider',
+                type=str,
+                location=OpenApiParameter.QUERY,
+                required=True,
+                description='第三方提供商名称'
+            )
+        ],
+        responses={302: dict},
+        summary="第三方登录跳转",
+        description="跳转到第三方登录页面"
+    )
     @action(detail=False, methods=['get'])
     def third_party_auth(self, request):
         """第三方登录跳转"""
@@ -136,6 +168,27 @@ class UserViewSet(viewsets.ModelViewSet):
         except ThirdPartyAuthConfig.DoesNotExist:
             return ApiResponse.not_found('认证提供商不存在').to_response()
     
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name='state',
+                type=str,
+                location=OpenApiParameter.QUERY,
+                required=True,
+                description='状态参数'
+            ),
+            OpenApiParameter(
+                name='code',
+                type=str,
+                location=OpenApiParameter.QUERY,
+                required=True,
+                description='授权码'
+            )
+        ],
+        responses={200: dict},
+        summary="第三方登录回调",
+        description="第三方登录成功后的回调处理"
+    )
     @action(detail=False, methods=['get'])
     def third_party_callback(self, request):
         """第三方登录回调"""
@@ -195,6 +248,15 @@ class UserViewSet(viewsets.ModelViewSet):
             logger.error("第三方登录失败", provider=provider, error=str(e))
             return ApiResponse.internal_error('登录失败').to_response()
     
+    @extend_schema(
+        request=SyncUsersSerializer,
+        responses={
+            200: dict,
+            403: {'description': '权限不足 - 需要用户管理模块的修改权限'}
+        },
+        summary="同步第三方用户",
+        description="从第三方平台同步用户数据\n\n**权限要求**: 需要具有 `user_management` 模块的 `change` 权限"
+    )
     @action(detail=False, methods=['post'])
     def sync_users(self, request):
         """同步第三方用户（仅管理员可用）"""
@@ -279,6 +341,11 @@ class UserViewSet(viewsets.ModelViewSet):
             logger.error(f"创建用户失败: {str(e)}")
             return None
     
+    @extend_schema(
+        responses={200: dict},
+        summary="用户登出",
+        description="退出当前用户登录状态"
+    )
     @action(detail=False, methods=['post'])
     def logout(self, request):
         """用户登出"""
@@ -290,6 +357,11 @@ class UserViewSet(viewsets.ModelViewSet):
         return ApiResponse.success(message='登出成功').to_response()
     
 
+    @extend_schema(
+        responses={200: UserSerializer},
+        summary="获取用户信息",
+        description="获取当前登录用户的详细信息"
+    )
     @action(detail=False, methods=['get'])
     def profile(self, request):
         """获取当前用户信息"""
@@ -298,6 +370,12 @@ class UserViewSet(viewsets.ModelViewSet):
             message='获取用户信息成功'
         ).to_response()
     
+    @extend_schema(
+        request=UserProfileSerializer,
+        responses={200: UserProfileSerializer},
+        summary="更新用户资料",
+        description="更新当前用户的个人资料信息"
+    )
     @action(detail=False, methods=['put', 'patch'])
     def update_profile(self, request):
         """更新用户资料"""
@@ -317,6 +395,11 @@ class UserViewSet(viewsets.ModelViewSet):
             data=serializer.errors
         ).to_response()
     
+    @extend_schema(
+        responses={200: dict},
+        summary="获取Token",
+        description="获取当前用户的API Token"
+    )
     @action(detail=False, methods=['get'])
     def get_token(self, request):
         """获取当前用户Token"""
@@ -334,6 +417,11 @@ class UserViewSet(viewsets.ModelViewSet):
         except Token.DoesNotExist:
             return ApiResponse.not_found('Token不存在').to_response()
     
+    @extend_schema(
+        responses={200: dict},
+        summary="刷新Token",
+        description="刷新当前用户的API Token"
+    )
     @action(detail=False, methods=['post'])
     def refresh_token(self, request):
         """刷新Token"""
@@ -350,6 +438,11 @@ class UserViewSet(viewsets.ModelViewSet):
             message='Token刷新成功'
         ).to_response()
     
+    @extend_schema(
+        responses={200: dict},
+        summary="撤销Token",
+        description="撤销当前用户的API Token"
+    )
     @action(detail=False, methods=['delete'])
     def revoke_token(self, request):
         """撤销Token"""
@@ -364,6 +457,11 @@ class UserViewSet(viewsets.ModelViewSet):
             message='Token已撤销'
         ).to_response()
     
+    @extend_schema(
+        responses={200: dict},
+        summary="获取用户模块权限",
+        description="获取当前用户可访问的系统模块和权限"
+    )
     @action(detail=False, methods=['get'])
     def my_modules(self, request):
         """获取当前用户可访问的模块"""
@@ -401,6 +499,11 @@ class UserViewSet(viewsets.ModelViewSet):
             message='获取用户模块权限成功'
         ).to_response()
     
+    @extend_schema(
+        responses={200: dict},
+        summary="检查登录状态",
+        description="检查当前用户的登录状态（用于轮询）"
+    )
     @action(detail=False, methods=['get'])
     def check_login_status(self, request):
         """检查登录状态（用于二维码登录轮询）"""

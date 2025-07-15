@@ -56,15 +56,38 @@ def _init_logger():
     # 配置控制台输出
     console_config = config.get('console', {})
     if console_config.get('enabled', True):
-        def console_format(record):
-            extra_str = _format_extra(record)
-            return f"<green>{record['time']:YYYY-MM-DD HH:mm:ss}</green> | <level>{record['level']: <8}</level> | <cyan>{record['name']}</cyan>:<cyan>{record['function']}</cyan>:<cyan>{record['line']}</cyan> {extra_str} - <level>{record['message']}</level>\n"
+        def console_formatter(record):
+            extra = record.get('extra', {})
+            extra_str = ''
+            if extra:
+                extra_parts = []
+                for k, v in extra.items():
+                    if k not in ['name', 'function', 'line', 'level', 'time', 'message']:
+                        extra_parts.append(f"{k}={v}")
+                if extra_parts:
+                    extra_str = f" [{' '.join(extra_parts)}]"
+            
+            try:
+                from colorama import Fore, Style
+                time_str = f"{Fore.GREEN}{record['time'].strftime('%Y-%m-%d %H:%M:%S')}{Style.RESET_ALL}"
+                level_color = {'DEBUG': Fore.BLUE, 'INFO': Fore.CYAN, 'WARNING': Fore.YELLOW, 'ERROR': Fore.RED, 'CRITICAL': Fore.MAGENTA}.get(record['level'].name, '')
+                level_str = f"{level_color}{record['level']: <8}{Style.RESET_ALL}"
+                location_str = f"{Fore.CYAN}{record['name']}:{record['function']}:{record['line']}{Style.RESET_ALL}"
+                message_str = f"{level_color}{record['message']}{Style.RESET_ALL}"
+            except ImportError:
+                time_str = record['time'].strftime('%Y-%m-%d %H:%M:%S')
+                level_str = f"{record['level']: <8}"
+                location_str = f"{record['name']}:{record['function']}:{record['line']}"
+                message_str = record['message']
+            
+            return f"{time_str} | {level_str} | {location_str}{extra_str} - {message_str}\n"
         
         logger.add(
             sys.stdout,
-            format=console_format,
+            format=console_formatter,
             level=console_config.get('level', 'INFO')
         )
+
     
     # 配置文件输出
     file_config = config.get('file', {})
