@@ -63,7 +63,20 @@ def _init_logger():
                 extra_parts = []
                 for k, v in extra.items():
                     if k not in ['name', 'function', 'line', 'level', 'time', 'message']:
-                        extra_parts.append(f"{k}={v}")
+                        try:
+                            # 安全地转换复杂数据类型
+                            if isinstance(v, (dict, list)):
+                                import json
+                                v_str = json.dumps(v, ensure_ascii=False, separators=(',', ':'))[:100]
+                                if len(str(v)) > 100:
+                                    v_str += '...'
+                                # 转义特殊字符避免Loguru格式化错误
+                                v_str = v_str.replace('{', '{{').replace('}', '}}').replace('<', '&lt;').replace('>', '&gt;')
+                            else:
+                                v_str = str(v).replace('{', '{{').replace('}', '}}').replace('<', '&lt;').replace('>', '&gt;')
+                            extra_parts.append(f"{k}={v_str}")
+                        except Exception:
+                            extra_parts.append(f"{k}=&lt;unprintable&gt;")
                 if extra_parts:
                     extra_str = f" [{' '.join(extra_parts)}]"
             

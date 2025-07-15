@@ -11,7 +11,7 @@ class UserAdmin(BaseUserAdmin):
     list_display = ('email', 'username', 'get_departments', 'job_title', 'is_verified', 'is_active', 'created_at')
     list_filter = ('is_verified', 'is_active', 'is_staff', 'auth_source', 'created_at')
     search_fields = ('email', 'username', 'phone', 'department', 'employee_id')
-    filter_horizontal = ('departments',)
+    filter_horizontal = ('departments', 'groups', 'user_permissions')
     ordering = ('-created_at',)
     
     fieldsets = (
