@@ -83,7 +83,8 @@ class ThirdPartyAuthConfigAdmin(admin.ModelAdmin):
         }),
         ('配置参数', {
             'fields': ('config',),
-            'description': '请按照下方格式填写JSON配置'
+            'description': '请按照下方格式填写JSON配置',
+            'classes': ('json-config-section',)
         }),
         ('时间信息', {
             'fields': ('created_at', 'updated_at'),
@@ -94,11 +95,33 @@ class ThirdPartyAuthConfigAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
         
-        # 为config字段添加帮助文本
+        # 为config字段添加帮助文本和样式
         if 'config' in form.base_fields:
             form.base_fields['config'].help_text = self._get_config_help_text(obj)
+            form.base_fields['config'].widget.attrs.update({
+                'style': 'font-family: Monaco, Consolas, "Courier New", monospace; font-size: 13px; line-height: 1.4; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 12px;',
+                'rows': 15,
+                'cols': 80,
+                'placeholder': '请输入JSON格式的配置信息...',
+                'class': 'json-config-field'
+            })
+            
+            # 如果是编辑模式，格式化显示JSON
+            if obj and obj.config:
+                import json
+                try:
+                    formatted_json = json.dumps(obj.config, indent=2, ensure_ascii=False)
+                    form.base_fields['config'].initial = formatted_json
+                except (TypeError, ValueError):
+                    pass
         
         return form
+    
+    class Media:
+        css = {
+            'all': ('admin/css/json-editor.css',)
+        }
+        js = ('admin/js/json-editor.js',)
     
     def _get_config_help_text(self, obj):
         """获取配置帮助文本"""
@@ -118,7 +141,9 @@ class ThirdPartyAuthConfigAdmin(admin.ModelAdmin):
   "client_secret": "your_dingtalk_client_secret",
   "agent_id": "1000001",
   "corp_id": "ding123456789abcdef",
-  "redirect_uri": "https://your-domain.com/api/users/third_party_callback/"
+  "redirect_uri": "https://your-domain.com/api/users/third_party_callback/",
+  "token": "your_callback_token",
+  "aes_key": "your_aes_key"
 }</pre>
             <p style="margin: 8px 0; color: #666;">
                 <strong>参数说明:</strong><br>
@@ -126,9 +151,21 @@ class ThirdPartyAuthConfigAdmin(admin.ModelAdmin):
                 • client_id: 原AppKey，用于OAuth授权<br>
                 • client_secret: 原AppSecret，用于OAuth授权<br>
                 • agent_id: 企业内部应用ID（可选）<br>
-                • corp_id: 企业ID
+                • corp_id: 企业ID<br>
+                • <span style="color: #f39c12;">token: 事件回调Token（可选）</span><br>
+                • <span style="color: #f39c12;">aes_key: 事件回调加密Key（可选）</span>
             </p>
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 12px; margin: 10px 0;">
+                <h5 style="color: #856404; margin: 0 0 8px 0;">🔔 事件回调配置说明：</h5>
+                <p style="margin: 0; color: #856404; line-height: 1.5;">
+                    • <strong>token</strong> 和 <strong>aes_key</strong> 仅在使用钉钉事件回调功能时需要<br>
+                    • 如果只使用登录和用户同步功能，可以不配置这两个参数<br>
+                    • 回调地址：<code>https://your-domain.com/api/dingtalk/callback/</code><br>
+                    • 在钉钉开放平台 > 应用开发 > 事件与回调 中配置
+                </p>
+            </div>
             <p style="margin: 8px 0; color: #666;"><strong>获取方式:</strong> 钉钉开放平台 > 应用开发 > 创建应用</p>
+            <p style="margin: 8px 0; color: #666;"><strong>回调配置:</strong> 应用管理 > 事件与回调 > 设置回调URL和Token/AESKey</p>
             
             <h4 style="color: #3498db;">📱 企业微信配置示例 (name: wechat_work):</h4>
             <pre style="background: #e8f4fd; padding: 12px; border-radius: 6px; border-left: 4px solid #3498db;">{
