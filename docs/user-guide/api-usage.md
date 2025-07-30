@@ -227,7 +227,7 @@ class RookieAPI {
   constructor(baseURL = 'http://127.0.0.1:8000/api') {
     this.baseURL = baseURL;
     this.token = localStorage.getItem('auth_token');
-    
+
     // 配置axios实例
     this.client = axios.create({
       baseURL: this.baseURL,
@@ -235,7 +235,7 @@ class RookieAPI {
         'Content-Type': 'application/json'
       }
     });
-    
+
     // 请求拦截器 - 添加Token
     this.client.interceptors.request.use(config => {
       if (this.token) {
@@ -243,7 +243,7 @@ class RookieAPI {
       }
       return config;
     });
-    
+
     // 响应拦截器 - 处理错误
     this.client.interceptors.response.use(
       response => response.data,
@@ -256,14 +256,14 @@ class RookieAPI {
       }
     );
   }
-  
+
   // 用户登录
   async login(email, password) {
     const response = await this.client.post('/users/login/', {
       email,
       password
     });
-    
+
     if (response.success) {
       this.token = response.data.token;
       localStorage.setItem('auth_token', this.token);
@@ -271,19 +271,19 @@ class RookieAPI {
     }
     throw new Error(response.message);
   }
-  
+
   // 获取用户信息
   async getProfile() {
     const response = await this.client.get('/users/profile/');
     return response.data.user;
   }
-  
+
   // 获取用户权限
   async getModules() {
     const response = await this.client.get('/users/my_modules/');
     return response.data;
   }
-  
+
   // 用户登出
   async logout() {
     try {
@@ -320,45 +320,45 @@ class RookieAPIClient:
         self.session.headers.update({
             'Content-Type': 'application/json'
         })
-    
+
     def _request(self, method: str, endpoint: str, **kwargs) -> Dict[Any, Any]:
         """统一请求方法"""
         url = f"{self.base_url}{endpoint}"
-        
+
         if self.token:
             self.session.headers['Authorization'] = f'Token {self.token}'
-        
+
         response = self.session.request(method, url, **kwargs)
         result = response.json()
-        
+
         if not result.get('success'):
             raise Exception(f"API错误: {result.get('message')}")
-        
+
         return result
-    
+
     def login(self, email: str, password: str) -> Dict[str, Any]:
         """用户登录"""
         data = {"email": email, "password": password}
         result = self._request('POST', '/users/login/', json=data)
-        
+
         self.token = result['data']['token']
         return result['data']['user']
-    
+
     def get_profile(self) -> Dict[str, Any]:
         """获取用户信息"""
         result = self._request('GET', '/users/profile/')
         return result['data']['user']
-    
+
     def get_modules(self) -> Dict[str, Any]:
         """获取用户权限模块"""
         result = self._request('GET', '/users/my_modules/')
         return result['data']
-    
+
     def update_profile(self, **kwargs) -> Dict[str, Any]:
         """更新用户资料"""
         result = self._request('PATCH', '/users/update_profile/', json=kwargs)
         return result['data']['profile']
-    
+
     def logout(self) -> None:
         """用户登出"""
         try:
@@ -375,15 +375,15 @@ try:
     # 登录
     user = client.login('user@example.com', 'password123')
     print(f"登录成功: {user['email']}")
-    
+
     # 获取用户信息
     profile = client.get_profile()
     print(f"用户信息: {profile}")
-    
+
     # 获取权限模块
     modules = client.get_modules()
     print(f"可访问模块: {len(modules['modules'])}")
-    
+
 except Exception as e:
     print(f"错误: {e}")
 ```
@@ -401,14 +401,14 @@ export const APIProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('auth_token'));
   const [loading, setLoading] = useState(false);
-  
+
   const api = axios.create({
     baseURL: 'http://127.0.0.1:8000/api',
     headers: {
       'Content-Type': 'application/json'
     }
   });
-  
+
   // 请求拦截器
   api.interceptors.request.use(config => {
     if (token) {
@@ -416,7 +416,7 @@ export const APIProvider = ({ children }) => {
     }
     return config;
   });
-  
+
   // 响应拦截器
   api.interceptors.response.use(
     response => response.data,
@@ -427,40 +427,40 @@ export const APIProvider = ({ children }) => {
       return Promise.reject(error);
     }
   );
-  
+
   const login = async (email, password) => {
     setLoading(true);
     try {
       const response = await api.post('/users/login/', { email, password });
       const { user, token } = response.data;
-      
+
       setUser(user);
       setToken(token);
       localStorage.setItem('auth_token', token);
-      
+
       return user;
     } finally {
       setLoading(false);
     }
   };
-  
+
   const logout = () => {
     setUser(null);
     setToken(null);
     localStorage.removeItem('auth_token');
   };
-  
+
   const getProfile = async () => {
     const response = await api.get('/users/profile/');
     return response.data.user;
   };
-  
+
   useEffect(() => {
     if (token && !user) {
       getProfile().then(setUser).catch(() => logout());
     }
   }, [token]);
-  
+
   const value = {
     user,
     token,
@@ -470,7 +470,7 @@ export const APIProvider = ({ children }) => {
     getProfile,
     api
   };
-  
+
   return (
     <APIContext.Provider value={value}>
       {children}
@@ -492,7 +492,7 @@ const LoginForm = () => {
   const { login, loading } = useAPI();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -502,7 +502,7 @@ const LoginForm = () => {
       console.error('登录失败:', error);
     }
   };
-  
+
   return (
     <form onSubmit={handleSubmit}>
       <input

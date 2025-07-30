@@ -50,14 +50,14 @@ ngrok http 8000 --hostname=your-custom-domain.ngrok.io
 ### 3. 获取公网地址
 ngrok启动后会显示类似信息：
 ```
-ngrok                                                          
+ngrok
 
-Session Status                online                          
+Session Status                online
 Account                       your-email@example.com (Plan: Free)
-Version                       3.0.0                           
-Region                        United States (us)              
-Latency                       45ms                            
-Web Interface                 http://127.0.0.1:4040          
+Version                       3.0.0
+Region                        United States (us)
+Latency                       45ms
+Web Interface                 http://127.0.0.1:4040
 Forwarding                    https://6cc54b1a26d0.ngrok-free.app -> http://localhost:8000
 
 Connections                   ttl     opn     rt1     rt5     p50     p90
@@ -74,7 +74,7 @@ Connections                   ttl     opn     rt1     rt5     p50     p90
 ```python
 CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
-    'http://localhost:8000', 
+    'http://localhost:8000',
     'https://*.ngrok.io',
     'https://*.ngrok-free.app',
     'https://*.ngrok.app',
@@ -91,7 +91,7 @@ CSRF_TRUSTED_ORIGINS = [
   "is_enabled": true,
   "config": {
     "app_id": "dingoa123456789",
-    "client_id": "dingoa987654321", 
+    "client_id": "dingoa987654321",
     "client_secret": "your_client_secret",
     "corp_id": "ding123456789abcdef",
     "redirect_uri": "https://6cc54b1a26d0.ngrok-free.app/api/users/third_party_callback/"

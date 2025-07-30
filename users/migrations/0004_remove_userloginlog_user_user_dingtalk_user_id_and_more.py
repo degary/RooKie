@@ -4,30 +4,37 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('users', '0003_systemmodule_user_department_user_employee_id_and_more'),
+        ("users", "0003_systemmodule_user_department_user_employee_id_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='userloginlog',
-            name='user',
+            model_name="userloginlog",
+            name="user",
         ),
         migrations.AddField(
-            model_name='user',
-            name='dingtalk_user_id',
-            field=models.CharField(blank=True, max_length=100, null=True, verbose_name='钉钉用户ID'),
+            model_name="user",
+            name="dingtalk_user_id",
+            field=models.CharField(
+                blank=True, max_length=100, null=True, verbose_name="钉钉用户ID"
+            ),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='external_id',
-            field=models.CharField(blank=True, help_text='对于 dingtalk，此字段对应unionId', max_length=100, null=True, verbose_name='外部ID'),
+            model_name="user",
+            name="external_id",
+            field=models.CharField(
+                blank=True,
+                help_text="对于 dingtalk，此字段对应unionId",
+                max_length=100,
+                null=True,
+                verbose_name="外部ID",
+            ),
         ),
         migrations.DeleteModel(
-            name='QRCodeLogin',
+            name="QRCodeLogin",
         ),
         migrations.DeleteModel(
-            name='UserLoginLog',
+            name="UserLoginLog",
         ),
     ]

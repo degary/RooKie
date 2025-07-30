@@ -48,19 +48,19 @@ SPECTACULAR_SETTINGS = {
             'bearerFormat': 'Token',
         }
     ],
-    
+
     # 服务器配置
     'SERVERS': [
         {'url': 'http://127.0.0.1:8000', 'description': '开发环境'},
         {'url': 'https://api.example.com', 'description': '生产环境'},
     ],
-    
+
     # 标签配置
     'TAGS': [
         {'name': 'users', 'description': '用户管理'},
         {'name': 'auth', 'description': '认证授权'},
     ],
-    
+
     # 自定义扩展
     'EXTENSIONS_INFO': {
         'x-logo': {
@@ -123,12 +123,12 @@ class UserSerializer(serializers.ModelSerializer):
         write_only=True,
         help_text="用户密码，至少8位字符"
     )
-    
+
     @extend_schema_field(serializers.CharField)
     def get_full_name(self, obj):
         """获取用户全名"""
         return f"{obj.first_name} {obj.last_name}"
-    
+
     class Meta:
         model = User
         fields = ['id', 'email', 'username', 'password']

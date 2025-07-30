@@ -10,7 +10,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             background: #f0f2f5;
@@ -19,7 +19,7 @@
             align-items: center;
             justify-content: center;
         }
-        
+
         .login-container {
             background: white;
             border-radius: 8px;
@@ -27,12 +27,12 @@
             width: 400px;
             overflow: hidden;
         }
-        
+
         .login-header {
             text-align: center;
             padding: 40px 40px 24px;
         }
-        
+
         .logo {
             width: 48px;
             height: 48px;
@@ -46,25 +46,25 @@
             font-size: 20px;
             font-weight: 600;
         }
-        
+
         .login-title {
             font-size: 28px;
             color: #262626;
             margin-bottom: 8px;
             font-weight: 600;
         }
-        
+
         .login-subtitle {
             color: #8c8c8c;
             font-size: 14px;
         }
-        
+
         .login-tabs {
             display: flex;
             border-bottom: 1px solid #f0f0f0;
             margin: 0 40px;
         }
-        
+
         .tab-btn {
             flex: 1;
             padding: 12px 0;
@@ -76,11 +76,11 @@
             transition: all 0.3s;
             position: relative;
         }
-        
+
         .tab-btn.active {
             color: #1890ff;
         }
-        
+
         .tab-btn.active::after {
             content: '';
             position: absolute;
@@ -91,30 +91,30 @@
             height: 2px;
             background: #1890ff;
         }
-        
+
         .login-content {
             padding: 40px;
         }
-        
+
         .tab-panel {
             display: none;
         }
-        
+
         .tab-panel.active {
             display: block;
         }
-        
+
         .form-group {
             margin-bottom: 20px;
         }
-        
+
         .form-label {
             display: block;
             margin-bottom: 8px;
             color: #333;
             font-weight: 500;
         }
-        
+
         .form-input {
             width: 100%;
             padding: 12px 12px;
@@ -124,17 +124,17 @@
             transition: all 0.3s;
             background: #fff;
         }
-        
+
         .form-input:hover {
             border-color: #40a9ff;
         }
-        
+
         .form-input:focus {
             outline: none;
             border-color: #40a9ff;
             box-shadow: 0 0 0 2px rgba(24,144,255,0.2);
         }
-        
+
         .login-btn {
             width: 100%;
             height: 40px;
@@ -147,21 +147,21 @@
             cursor: pointer;
             transition: all 0.3s;
         }
-        
+
         .login-btn:hover {
             background: #40a9ff;
         }
-        
+
         .login-btn:disabled {
             background: #f5f5f5;
             color: #bfbfbf;
             cursor: not-allowed;
         }
-        
+
         .qr-container {
             text-align: center;
         }
-        
+
         .qr-code {
             width: 250px;
             height: 250px;
@@ -175,19 +175,19 @@
             position: relative;
             z-index: 10;
         }
-        
+
         .qr-placeholder {
             color: #999;
             font-size: 14px;
         }
-        
+
         .qr-providers {
             display: flex;
             gap: 12px;
             justify-content: center;
             margin-bottom: 20px;
         }
-        
+
         .provider-btn {
             padding: 6px 16px;
             border: 1px solid #d9d9d9;
@@ -197,43 +197,43 @@
             font-size: 14px;
             transition: all 0.3s;
         }
-        
+
         .provider-btn:hover {
             border-color: #40a9ff;
             color: #1890ff;
         }
-        
+
         .provider-btn.active {
             background: #1890ff;
             color: white;
             border-color: #1890ff;
         }
-        
+
         .qr-status {
             padding: 12px;
             border-radius: 6px;
             font-size: 14px;
             text-align: center;
         }
-        
+
         .status-waiting {
             background: #fffbe6;
             color: #d48806;
             border: 1px solid #ffe58f;
         }
-        
+
         .status-success {
             background: #f6ffed;
             color: #389e0d;
             border: 1px solid #b7eb8f;
         }
-        
+
         .status-error {
             background: #fff2f0;
             color: #cf1322;
             border: 1px solid #ffccc7;
         }
-        
+
         .refresh-btn {
             background: none;
             border: none;
@@ -243,17 +243,17 @@
             margin-top: 12px;
             transition: color 0.3s;
         }
-        
+
         .refresh-btn:hover {
             color: #40a9ff;
         }
-        
+
         .error-message {
             color: #ff4d4f;
             font-size: 14px;
             margin-top: 8px;
         }
-        
+
         .form-label {
             display: block;
             margin-bottom: 4px;
@@ -261,13 +261,13 @@
             font-size: 14px;
             font-weight: 400;
         }
-        
+
         @media (max-width: 480px) {
             .login-container {
                 width: 90%;
                 margin: 20px;
             }
-            
+
             .login-content {
                 padding: 30px 20px;
             }
@@ -281,7 +281,7 @@
             <h1 class="login-title">欢迎使用 Rookie</h1>
             <p class="login-subtitle">企业级应用管理平台</p>
         </div>
-        
+
         <div class="login-tabs">
             <button class="tab-btn active" onclick="switchTab('password')">
                 账号登录
@@ -290,7 +290,7 @@
                 扫码登录
             </button>
         </div>
-        
+
         <div class="login-content">
             <!-- 账号登录面板 -->
             <div id="password-panel" class="tab-panel active">
@@ -307,22 +307,22 @@
                     <div id="login-error" class="error-message" style="display: none;"></div>
                 </form>
             </div>
-            
+
             <!-- 扫码登录面板 -->
             <div id="qrcode-panel" class="tab-panel">
                 <div class="qr-container">
                     <div class="qr-providers" id="qr-providers">
                         <div class="qr-placeholder">加载中...</div>
                     </div>
-                    
+
                     <div class="qr-code" id="qr-code">
                         <div class="qr-placeholder">请选择登录方式</div>
                     </div>
-                    
+
                     <div id="qr-status" class="qr-status status-waiting" style="display: none;">
                         等待扫码...
                     </div>
-                    
+
                     <button class="refresh-btn" onclick="refreshQR()" style="display: none;" id="refresh-btn">
                         刷新二维码
                     </button>
@@ -334,30 +334,30 @@
     <script>
         let currentProvider = null;
         let statusInterval = null;
-        
+
         // 切换登录方式
         function switchTab(type) {
             // 更新标签状态
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
-            
+
             event.target.classList.add('active');
             document.getElementById(type + '-panel').classList.add('active');
-            
+
             // 如果切换到扫码登录，加载提供商
             if (type === 'qrcode') {
                 loadQRProviders();
             }
         }
-        
+
         // 账号登录
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const errorDiv = document.getElementById('login-error');
-            
+
             try {
                 const response = await fetch('/api/users/login/', {
                     method: 'POST',
@@ -367,9 +367,9 @@
                     },
                     body: JSON.stringify({ email, password })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     // 登录成功，跳转到管理后台
                     window.location.href = '/admin/';
@@ -382,25 +382,25 @@
                 errorDiv.style.display = 'block';
             }
         });
-        
+
         let providersData = null;
         let isLoadingProviders = false;
-        
+
         // 加载扫码登录提供商
         async function loadQRProviders() {
             if (providersData || isLoadingProviders) {
                 return; // 已加载过或正在加载，不重复加载
             }
-            
+
             isLoadingProviders = true;
-            
+
             try {
                 const response = await fetch('/api/users/third_party_providers/');
                 const data = await response.json();
                 providersData = data;
-                
+
                 const container = document.getElementById('qr-providers');
-                
+
                 if (data.success && data.data.providers.length > 0) {
                     if (data.data.providers.length === 1) {
                         // 只有一个提供商，直接显示二维码
@@ -410,7 +410,7 @@
                         setTimeout(() => selectProvider(provider.name), 100);
                     } else {
                         // 多个提供商，显示选择按钮
-                        container.innerHTML = data.data.providers.map(provider => 
+                        container.innerHTML = data.data.providers.map(provider =>
                             `<button class="provider-btn" onclick="selectProvider('${provider.name}')">${provider.display_name}</button>`
                         ).join('');
                     }
@@ -424,64 +424,64 @@
                 isLoadingProviders = false;
             }
         }
-        
+
         // 选择登录提供商
         function selectProvider(provider) {
             // 防止重复点击
             if (currentProvider === provider) {
                 return;
             }
-            
+
             // 更新按钮状态（只有在有多个提供商时才更新）
             if (event && event.target) {
                 document.querySelectorAll('.provider-btn').forEach(btn => btn.classList.remove('active'));
                 event.target.classList.add('active');
             }
-            
+
             currentProvider = provider;
             generateQR(provider);
         }
-        
+
         let isGenerating = false;
-        
+
         // 生成二维码
         async function generateQR(provider) {
             if (isGenerating) {
                 return;
             }
-            
+
             isGenerating = true;
             const qrCode = document.getElementById('qr-code');
             const status = document.getElementById('qr-status');
             const refreshBtn = document.getElementById('refresh-btn');
-            
+
             try {
                 qrCode.innerHTML = '<div class="qr-placeholder">正在生成二维码...</div>';
-                
+
                 // 使用缓存的数据，避免重复请求
                 if (providersData && providersData.success) {
                     const providerData = providersData.data.providers.find(p => p.name === provider);
                     if (providerData) {
                         // 生成二维码，传递provider配置
                         await generateQRCode(providerData.auth_url, qrCode, providerData);
-                        
+
                         // 显示状态
                         status.textContent = '请使用' + providerData.display_name + 'APP扫码登录';
                         status.className = 'qr-status status-waiting';
                         status.style.display = 'block';
-                        
+
                         // 钉钉使用JS SDK，不需要刷新按钮
                         if (provider === 'dingtalk') {
                             refreshBtn.style.display = 'none';
                         } else {
                             refreshBtn.style.display = 'block';
                         }
-                        
+
                         // 如果只有一个提供商，隐藏选择按钮区域
                         if (providersData.data.providers.length === 1) {
                             document.getElementById('qr-providers').style.display = 'none';
                         }
-                        
+
                         // 钉钉使用JS SDK回调，其他方式使用轮询
                         if (provider !== 'dingtalk') {
                             startPolling(provider);
@@ -499,7 +499,7 @@
                 isGenerating = false;
             }
         }
-        
+
         // 使用钉钉JS SDK生成二维码
         async function generateQRCode(url, container, providerData) {
             if (currentProvider === 'dingtalk') {
@@ -509,9 +509,9 @@
                 // 其他第三方登录使用链接方式
                 container.innerHTML = `
                     <div style="padding: 20px; text-align: center; font-size: 14px; line-height: 1.6;">
-                        <a href="${url}" 
+                        <a href="${url}"
                            style="display: inline-block; padding: 10px 20px; background: #1890ff; color: white; text-decoration: none; border-radius: 6px; font-size: 14px;"
-                           onmouseover="this.style.background='#40a9ff'" 
+                           onmouseover="this.style.background='#40a9ff'"
                            onmouseout="this.style.background='#1890ff'">
                             点击这里登录
                         </a>
@@ -519,18 +519,18 @@
                 `;
             }
         }
-        
+
         // 生成钉钉二维码
         function generateDingTalkQR(container, providerData) {
             console.log('开始生成钉钉二维码');
             // 清空容器
             container.innerHTML = '';
             container.id = 'dingtalk-qr-container';
-            
+
             // 检查回调地址
             const redirectUri = window.location.origin + '/api/users/third_party_callback/';
             console.log('回调地址:', redirectUri);
-            
+
             // 加载钉钉JS SDK
             if (!window.DTFrameLogin) {
                 const script = document.createElement('script');
@@ -548,7 +548,7 @@
                 initDingTalkQR(container, providerData);
             }
         }
-        
+
         // 初始化钉钉二维码
         function initDingTalkQR(container, providerData) {
             try {
@@ -590,13 +590,13 @@
                 container.innerHTML = '<div class="qr-placeholder">二维码初始化失败</div>';
             }
         }
-        
+
         // 轮询登录状态（仅用于非钉钉登录方式）
         function startPolling(provider) {
             if (statusInterval) {
                 clearInterval(statusInterval);
             }
-            
+
             statusInterval = setInterval(async () => {
                 try {
                     const response = await fetch(`/api/users/check_login_status/?provider=${provider}`);
@@ -616,14 +616,14 @@
                 }
             }, 2000); // 每2秒检查一次
         }
-        
+
         // 刷新二维码
         function refreshQR() {
             if (currentProvider) {
                 generateQR(currentProvider);
             }
         }
-        
+
         // 处理钉钉登录
         async function handleDingTalkLogin(authCode, state) {
             try {
@@ -631,9 +631,9 @@
                     method: 'GET',
                     credentials: 'include', // 包含session cookie
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (response.ok && data.success) {
                     // 登录成功，跳转到指定地址
                     window.location.href = data.data.redirect_url || '/admin/';
@@ -645,7 +645,7 @@
                 alert('登录请求失败，请重试');
             }
         }
-        
+
         // 获取Cookie
         function getCookie(name) {
             let cookieValue = null;

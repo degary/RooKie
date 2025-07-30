@@ -336,7 +336,7 @@
 ```javascript
 async function handleAPIResponse(response) {
   const data = await response.json();
-  
+
   if (data.success) {
     // 成功处理
     console.log('操作成功:', data.message);
@@ -398,14 +398,14 @@ def handle_api_response(response: requests.Response) -> Dict[str, Any]:
         data = response.json()
     except ValueError:
         raise APIException("响应格式错误", response.status_code)
-    
+
     if data.get('success'):
         return data.get('data', {})
     else:
         code = data.get('code', response.status_code)
         message = data.get('message', '请求失败')
         error_data = data.get('data', {})
-        
+
         # 根据错误码进行特殊处理
         if code == 401:
             # Token无效，清除本地存储
@@ -416,12 +416,12 @@ def handle_api_response(response: requests.Response) -> Dict[str, Any]:
             print(f"数据验证失败: {error_data}")
         elif code >= 500:
             print(f"服务器错误: {message}")
-        
+
         raise APIException(message, code, error_data)
 
 # 使用示例
 try:
-    response = requests.get('/api/users/profile/', 
+    response = requests.get('/api/users/profile/',
                           headers={'Authorization': f'Token {token}'})
     user_data = handle_api_response(response)
     print('用户数据:', user_data)

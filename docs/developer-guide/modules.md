@@ -27,30 +27,30 @@ users/
 ```python
 class User(AbstractUser):
     """自定义用户模型"""
-    
+
     # 基础字段
     email = models.EmailField(unique=True, verbose_name="邮箱")
     username = models.CharField(max_length=150, verbose_name="用户名")
     phone = models.CharField(max_length=20, blank=True, verbose_name="手机号")
-    
+
     # 扩展字段
     avatar = models.URLField(blank=True, verbose_name="头像")
     department = models.CharField(max_length=100, blank=True, verbose_name="部门")
     job_title = models.CharField(max_length=100, blank=True, verbose_name="职位")
     employee_id = models.CharField(max_length=50, blank=True, verbose_name="员工编号")
-    
+
     # 第三方登录字段
     auth_source = models.CharField(max_length=20, default='local', verbose_name="认证来源")
     external_id = models.CharField(max_length=100, blank=True, verbose_name="外部ID")
-    
+
     # 状态字段
     is_verified = models.BooleanField(default=False, verbose_name="邮箱已验证")
-    
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
-    
+
     objects = UserManager()
-    
+
     class Meta:
         verbose_name = "用户"
         verbose_name_plural = "用户"
@@ -67,14 +67,14 @@ class User(AbstractUser):
 ```python
 class UserProfile(models.Model):
     """用户资料扩展"""
-    
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name="用户")
     bio = models.TextField(blank=True, verbose_name="个人简介")
     preferences = models.JSONField(default=dict, verbose_name="个人偏好")
-    
+
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
-    
+
     class Meta:
         verbose_name = "用户资料"
         verbose_name_plural = "用户资料"
@@ -89,16 +89,16 @@ class UserProfile(models.Model):
 ```python
 class SystemModule(models.Model):
     """系统模块定义"""
-    
+
     name = models.CharField(max_length=50, unique=True, verbose_name="模块名称")
     display_name = models.CharField(max_length=100, verbose_name="显示名称")
     description = models.TextField(blank=True, verbose_name="模块描述")
     icon = models.CharField(max_length=50, blank=True, verbose_name="图标")
     url_pattern = models.CharField(max_length=200, blank=True, verbose_name="URL模式")
     is_active = models.BooleanField(default=True, verbose_name="是否启用")
-    
+
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
-    
+
     class Meta:
         verbose_name = "系统模块"
         verbose_name_plural = "系统模块"
@@ -121,11 +121,11 @@ class SystemModule(models.Model):
 ```python
 class UserViewSet(viewsets.ModelViewSet):
     """用户管理ViewSet"""
-    
+
     queryset = User.objects.active_users()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
-    
+
     def get_permissions(self):
         """动态权限配置"""
         if self.action in ['register', 'login', 'third_party_auth', 'third_party_callback']:
@@ -133,19 +133,19 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]
-    
+
     @action(detail=False, methods=['post'])
     def register(self, request):
         """用户注册"""
         # 实现用户注册逻辑
         pass
-    
+
     @action(detail=False, methods=['post'])
     def login(self, request):
         """用户登录"""
         # 实现用户登录逻辑，返回Token
         pass
-    
+
     @action(detail=False, methods=['get'])
     def my_modules(self, request):
         """获取用户权限模块"""
@@ -165,33 +165,33 @@ class UserViewSet(viewsets.ModelViewSet):
 ```python
 class PermissionChecker:
     """权限检查器"""
-    
+
     def has_module_permission(self, user, module_name: str, permission_type: str) -> bool:
         """检查用户是否有模块权限"""
         if user.is_superuser:
             return True
-        
+
         # 检查用户直接权限
         codename = f"{permission_type}_systemmodule"
         if user.has_perm(f"users.{codename}"):
             return True
-        
+
         # 检查用户组权限
         return user.groups.filter(
             permissions__codename=codename,
             permissions__content_type__app_label='users'
         ).exists()
-    
+
     def get_user_modules(self, user):
         """获取用户可访问的模块"""
         if user.is_superuser:
             return SystemModule.objects.filter(is_active=True)
-        
+
         # 获取用户有权限的模块
         user_permissions = self.get_user_permissions(user)
         if 'view_systemmodule' in user_permissions:
             return SystemModule.objects.filter(is_active=True)
-        
+
         return SystemModule.objects.none()
 ```
 
@@ -227,7 +227,7 @@ def require_module_permission(module_name: str, permission_type: str):
 ```python
 class ApiResponse:
     """API响应包装器"""
-    
+
     def __init__(self, success: bool, code: int, message: str, data=None, request_id: str = None):
         self.success = success
         self.code = code
@@ -235,7 +235,7 @@ class ApiResponse:
         self.data = data
         self.timestamp = timezone.now().isoformat()
         self.request_id = request_id or str(uuid.uuid4())[:8]
-    
+
     def to_dict(self) -> dict:
         """转换为字典"""
         result = {
@@ -248,19 +248,19 @@ class ApiResponse:
         if self.data is not None:
             result['data'] = self.data
         return result
-    
+
     def to_response(self) -> Response:
         """转换为DRF Response对象"""
         return Response(
             data=self.to_dict(),
             status=self.code if self.code < 600 else 200
         )
-    
+
     @classmethod
     def success(cls, data=None, message: str = "操作成功", code: int = 200):
         """成功响应"""
         return cls(success=True, code=code, message=message, data=data)
-    
+
     @classmethod
     def error(cls, message: str = "操作失败", code: int = 400, data=None):
         """错误响应"""
@@ -277,7 +277,7 @@ class ApiResponse:
 ```python
 def custom_exception_handler(exc, context):
     """自定义异常处理器"""
-    
+
     # 处理自定义异常
     if isinstance(exc, ApiException):
         response = ApiResponse.error(
@@ -286,10 +286,10 @@ def custom_exception_handler(exc, context):
             data=exc.data
         )
         return response.to_response()
-    
+
     # 处理DRF默认异常
     response = exception_handler(exc, context)
-    
+
     if response is not None:
         # 包装DRF异常响应
         if response.status_code == 400:
@@ -300,12 +300,12 @@ def custom_exception_handler(exc, context):
         elif response.status_code == 401:
             api_response = ApiResponse.unauthorized()
         # ... 其他状态码处理
-        
+
         return Response(
             data=api_response.to_dict(),
             status=response.status_code
         )
-    
+
     return response
 ```
 
@@ -315,13 +315,13 @@ def custom_exception_handler(exc, context):
 ```python
 def setup_logger():
     """配置Loguru日志"""
-    
+
     # 移除默认处理器
     logger.remove()
-    
+
     # 根据环境配置不同的日志处理器
     env = os.getenv('DJANGO_ENV', 'dev')
-    
+
     if env == 'dev':
         # 开发环境：控制台 + 文件
         logger.add(
@@ -348,7 +348,7 @@ def setup_logger():
             retention="30 days",
             compression="zip"
         )
-    
+
     return logger
 
 def get_logger(name: str = None):
@@ -372,40 +372,40 @@ def get_logger(name: str = None):
 ```python
 class BaseAuthPlugin(ABC):
     """第三方认证插件基类"""
-    
+
     def __init__(self):
         self.config = {}
-    
+
     @property
     @abstractmethod
     def name(self) -> str:
         """插件名称"""
         pass
-    
+
     @property
     @abstractmethod
     def display_name(self) -> str:
         """显示名称"""
         pass
-    
+
     @abstractmethod
     def get_auth_url(self) -> str:
         """获取授权URL"""
         pass
-    
+
     @abstractmethod
     def get_user_info(self, code: str) -> Dict[str, Any]:
         """根据授权码获取用户信息"""
         pass
-    
+
     def get_qr_code_url(self) -> str:
         """获取二维码URL（可选实现）"""
         return self.get_auth_url()
-    
+
     def sync_users(self) -> int:
         """同步用户（可选实现）"""
         return 0
-    
+
     def validate_config(self, config: Dict) -> bool:
         """验证配置（可选实现）"""
         return True
@@ -415,20 +415,20 @@ class BaseAuthPlugin(ABC):
 ```python
 class DingTalkAuthPlugin(BaseAuthPlugin):
     """钉钉登录插件"""
-    
+
     @property
     def name(self) -> str:
         return 'dingtalk'
-    
+
     @property
     def display_name(self) -> str:
         return '钉钉登录'
-    
+
     def get_auth_url(self) -> str:
         """生成钉钉授权URL"""
         app_id = self.config.get('app_id')
         redirect_uri = self.config.get('redirect_uri')
-        
+
         params = {
             'appid': app_id,
             'response_type': 'code',
@@ -436,18 +436,18 @@ class DingTalkAuthPlugin(BaseAuthPlugin):
             'state': 'dingtalk_login',
             'redirect_uri': redirect_uri
         }
-        
+
         return f"https://oapi.dingtalk.com/connect/oauth2/sns_authorize?{urlencode(params)}"
-    
+
     def get_user_info(self, code: str) -> Dict[str, Any]:
         """获取钉钉用户信息"""
         # 1. 获取access_token
         token_data = self._get_access_token(code)
         access_token = token_data.get('access_token')
-        
+
         # 2. 获取用户信息
         user_info = self._get_user_profile(access_token)
-        
+
         # 3. 标准化用户信息
         return {
             'source': 'dingtalk',
@@ -460,12 +460,12 @@ class DingTalkAuthPlugin(BaseAuthPlugin):
             'job_title': user_info.get('position'),
             'employee_id': user_info.get('job_number')
         }
-    
+
     def _get_access_token(self, code: str) -> Dict:
         """获取访问令牌"""
         # 实现获取access_token的逻辑
         pass
-    
+
     def _get_user_profile(self, access_token: str) -> Dict:
         """获取用户资料"""
         # 实现获取用户信息的逻辑
@@ -476,11 +476,11 @@ class DingTalkAuthPlugin(BaseAuthPlugin):
 ```python
 class PluginManager:
     """插件管理器"""
-    
+
     def __init__(self):
         self._plugins = {}
         self._load_plugins()
-    
+
     def _load_plugins(self):
         """加载所有插件"""
         # 自动发现和注册插件
@@ -489,16 +489,16 @@ class PluginManager:
             WeChatWorkAuthPlugin,
             FeishuAuthPlugin,
         ]
-        
+
         for plugin_class in plugin_classes:
             self.register_plugin(plugin_class)
-    
+
     def register_plugin(self, plugin_class):
         """注册插件"""
         plugin = plugin_class()
         self._plugins[plugin.name] = plugin
         logger.info(f"注册插件: {plugin.display_name}")
-    
+
     def get_plugin(self, name: str, config: Dict) -> BaseAuthPlugin:
         """获取插件实例"""
         if name in self._plugins:
@@ -506,7 +506,7 @@ class PluginManager:
             plugin.config = config
             return plugin
         return None
-    
+
     def list_plugins(self) -> List[str]:
         """列出所有插件"""
         return list(self._plugins.keys())
@@ -558,7 +558,7 @@ templates/
             <h1 class="login-title">欢迎使用 Rookie</h1>
             <p class="login-subtitle">企业级应用管理平台</p>
         </div>
-        
+
         <div class="login-tabs">
             <button class="tab-btn active" onclick="switchTab('password')">
                 账号登录
@@ -567,7 +567,7 @@ templates/
                 扫码登录
             </button>
         </div>
-        
+
         <div class="login-content">
             <!-- 账号登录面板 -->
             <div id="password-panel" class="tab-panel active">
@@ -575,7 +575,7 @@ templates/
                     <!-- 登录表单 -->
                 </form>
             </div>
-            
+
             <!-- 扫码登录面板 -->
             <div id="qrcode-panel" class="tab-panel">
                 <div class="qr-container">
@@ -584,7 +584,7 @@ templates/
             </div>
         </div>
     </div>
-    
+
     <script>
         // 登录逻辑JavaScript代码
     </script>

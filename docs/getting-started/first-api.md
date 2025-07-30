@@ -174,15 +174,15 @@ class RookieAPIClient:
         self.base_url = base_url
         self.token = None
         self.session = requests.Session()
-    
+
     def login(self, email, password):
         """用户登录获取Token"""
         url = f"{self.base_url}/api/users/login/"
         data = {"email": email, "password": password}
-        
+
         response = self.session.post(url, json=data)
         result = response.json()
-        
+
         if result.get('success'):
             self.token = result['data']['token']
             self.session.headers.update({
@@ -191,24 +191,24 @@ class RookieAPIClient:
             return result['data']['user']
         else:
             raise Exception(f"登录失败: {result.get('message')}")
-    
+
     def get_profile(self):
         """获取用户信息"""
         url = f"{self.base_url}/api/users/profile/"
         response = self.session.get(url)
         result = response.json()
-        
+
         if result.get('success'):
             return result['data']['user']
         else:
             raise Exception(f"获取用户信息失败: {result.get('message')}")
-    
+
     def get_modules(self):
         """获取用户权限模块"""
         url = f"{self.base_url}/api/users/my_modules/"
         response = self.session.get(url)
         result = response.json()
-        
+
         if result.get('success'):
             return result['data']
         else:
@@ -217,23 +217,23 @@ class RookieAPIClient:
 # 使用示例
 if __name__ == "__main__":
     client = RookieAPIClient()
-    
+
     try:
         # 登录
         user = client.login("admin@example.com", "password123")
         print(f"登录成功: {user['email']}")
-        
+
         # 获取用户信息
         profile = client.get_profile()
         print(f"用户信息: {profile['username']}")
-        
+
         # 获取权限模块
         modules_data = client.get_modules()
         print(f"可访问模块数量: {len(modules_data['modules'])}")
-        
+
         for module in modules_data['modules']:
             print(f"- {module['display_name']}: {module['permissions']}")
-            
+
     except Exception as e:
         print(f"错误: {e}")
 ```
@@ -247,31 +247,31 @@ class AsyncRookieAPIClient:
     def __init__(self, base_url="http://127.0.0.1:8000"):
         self.base_url = base_url
         self.token = None
-    
+
     async def login(self, email, password):
         """异步登录"""
         url = f"{self.base_url}/api/users/login/"
         data = {"email": email, "password": password}
-        
+
         async with aiohttp.ClientSession() as session:
             async with session.post(url, json=data) as response:
                 result = await response.json()
-                
+
                 if result.get('success'):
                     self.token = result['data']['token']
                     return result['data']['user']
                 else:
                     raise Exception(f"登录失败: {result.get('message')}")
-    
+
     async def get_profile(self):
         """异步获取用户信息"""
         url = f"{self.base_url}/api/users/profile/"
         headers = {'Authorization': f'Token {self.token}'}
-        
+
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers) as response:
                 result = await response.json()
-                
+
                 if result.get('success'):
                     return result['data']['user']
                 else:
@@ -280,14 +280,14 @@ class AsyncRookieAPIClient:
 # 使用示例
 async def main():
     client = AsyncRookieAPIClient()
-    
+
     try:
         user = await client.login("admin@example.com", "password123")
         print(f"异步登录成功: {user['email']}")
-        
+
         profile = await client.get_profile()
         print(f"异步获取用户信息: {profile['username']}")
-        
+
     except Exception as e:
         print(f"错误: {e}")
 

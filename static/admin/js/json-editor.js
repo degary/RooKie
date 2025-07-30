@@ -1,7 +1,7 @@
 // JSON配置编辑器增强功能
 document.addEventListener('DOMContentLoaded', function() {
     const configTextarea = document.querySelector('.json-config-field');
-    
+
     if (configTextarea) {
         // 页面加载时自动格式化JSON
         setTimeout(function() {
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formatButton.textContent = '格式化JSON';
         formatButton.className = 'button';
         formatButton.style.marginLeft = '10px';
-        
+
         formatButton.addEventListener('click', function() {
             try {
                 const jsonText = configTextarea.value.trim();
@@ -34,14 +34,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 showMessage('JSON格式错误: ' + e.message, 'error');
             }
         });
-        
+
         // 验证JSON按钮
         const validateButton = document.createElement('button');
         validateButton.type = 'button';
         validateButton.textContent = '验证JSON';
         validateButton.className = 'button';
         validateButton.style.marginLeft = '5px';
-        
+
         validateButton.addEventListener('click', function() {
             try {
                 const jsonText = configTextarea.value.trim();
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 showMessage('JSON格式错误: ' + e.message, 'error');
             }
         });
-        
+
         // 添加按钮到页面
         const fieldWrapper = configTextarea.closest('.form-row');
         if (fieldWrapper) {
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
             buttonContainer.appendChild(validateButton);
             fieldWrapper.appendChild(buttonContainer);
         }
-        
+
         // 实时验证
         configTextarea.addEventListener('blur', function() {
             const jsonText = this.value.trim();
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
+
     function showMessage(text, type) {
         const message = document.createElement('div');
         message.textContent = text;
@@ -94,9 +94,9 @@ document.addEventListener('DOMContentLoaded', function() {
             z-index: 9999;
             background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#ffc107'};
         `;
-        
+
         document.body.appendChild(message);
-        
+
         setTimeout(() => {
             document.body.removeChild(message);
         }, 3000);

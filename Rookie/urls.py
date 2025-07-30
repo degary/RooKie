@@ -15,35 +15,48 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
-from django.shortcuts import redirect, render
-from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth import logout
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import redirect, render
+from django.urls import include, path
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
+)
+
 from users.login_views import LoginView
+
+
 def admin_login_redirect(request):
     # 如果是第三方登录回调，不要重定向
-    if 'third_party_callback' in request.META.get('HTTP_REFERER', ''):
-        return HttpResponse('Login required', status=401)
+    if "third_party_callback" in request.META.get("HTTP_REFERER", ""):
+        return HttpResponse("Login required", status=401)
     # 其他情况重定向到自定义登录页
-    return redirect('/login/')
+    return redirect("/login/")
+
 
 def admin_logout(request):
     logout(request)
-    return HttpResponseRedirect('/login/')
+    return HttpResponseRedirect("/login/")
+
 
 urlpatterns = [
-    path('login/', LoginView.as_view(), name='login'),
-    path('admin/logout/', admin_logout),
-    path('admin/login/', admin_login_redirect),
-    path('admin/', admin.site.urls),
-    path('api/', include('users.urls')),
+    path("login/", LoginView.as_view(), name="login"),
+    path("admin/logout/", admin_logout),
+    path("admin/login/", admin_login_redirect),
+    path("admin/", admin.site.urls),
+    path("api/", include("users.urls")),
     # API文档
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path(
+        "api/docs/",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger-ui",
+    ),
+    path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
     # 钉钉回调
-    path('api/dingtalk/', include('plugins.dingtalk.urls')),
+    path("api/dingtalk/", include("plugins.dingtalk.urls")),
     # 登录页面
     # path('login/', lambda request: render(request, 'auth/login.html'), name='login'),
 ]

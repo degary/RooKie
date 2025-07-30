@@ -8,8 +8,8 @@
 
 ### 用户注册
 
-**接口地址**: `POST /api/users/register/`  
-**认证要求**: 无  
+**接口地址**: `POST /api/users/register/`
+**认证要求**: 无
 **权限要求**: 无
 
 #### 请求参数
@@ -63,8 +63,8 @@
 
 ### 用户登录
 
-**接口地址**: `POST /api/users/login/`  
-**认证要求**: 无  
+**接口地址**: `POST /api/users/login/`
+**认证要求**: 无
 **权限要求**: 无
 
 #### 请求参数
@@ -100,8 +100,8 @@
 
 ### 用户登出
 
-**接口地址**: `POST /api/users/logout/`  
-**认证要求**: Token或Session  
+**接口地址**: `POST /api/users/logout/`
+**认证要求**: Token或Session
 **权限要求**: 已登录用户
 
 #### 请求参数
@@ -120,8 +120,8 @@
 
 ### 获取Token信息
 
-**接口地址**: `GET /api/users/get_token/`  
-**认证要求**: Token或Session  
+**接口地址**: `GET /api/users/get_token/`
+**认证要求**: Token或Session
 **权限要求**: 已登录用户
 
 #### 响应示例
@@ -139,8 +139,8 @@
 
 ### 刷新Token
 
-**接口地址**: `POST /api/users/refresh_token/`  
-**认证要求**: Token或Session  
+**接口地址**: `POST /api/users/refresh_token/`
+**认证要求**: Token或Session
 **权限要求**: 已登录用户
 
 #### 响应示例
@@ -157,8 +157,8 @@
 
 ### 撤销Token
 
-**接口地址**: `DELETE /api/users/revoke_token/`  
-**认证要求**: Token或Session  
+**接口地址**: `DELETE /api/users/revoke_token/`
+**认证要求**: Token或Session
 **权限要求**: 已登录用户
 
 #### 响应示例
@@ -177,8 +177,8 @@
 
 ### 获取登录提供商
 
-**接口地址**: `GET /api/users/third_party_providers/`  
-**认证要求**: 无  
+**接口地址**: `GET /api/users/third_party_providers/`
+**认证要求**: 无
 **权限要求**: 无
 
 #### 响应示例
@@ -206,8 +206,8 @@
 
 ### 第三方登录跳转
 
-**接口地址**: `GET /api/users/third_party_auth/`  
-**认证要求**: 无  
+**接口地址**: `GET /api/users/third_party_auth/`
+**认证要求**: 无
 **权限要求**: 无
 
 #### 请求参数
@@ -220,8 +220,8 @@ provider: 登录提供商名称 (dingtalk, wechat_work, feishu等)
 
 ### 第三方登录回调
 
-**接口地址**: `GET /api/users/third_party_callback/`  
-**认证要求**: 无  
+**接口地址**: `GET /api/users/third_party_callback/`
+**认证要求**: 无
 **权限要求**: 无
 
 #### 请求参数
@@ -256,8 +256,8 @@ state: 状态参数
 
 ### 同步第三方用户
 
-**接口地址**: `POST /api/users/sync_users/`  
-**认证要求**: Token或Session  
+**接口地址**: `POST /api/users/sync_users/`
+**认证要求**: Token或Session
 **权限要求**: 管理员权限
 
 #### 请求参数
@@ -292,9 +292,9 @@ async function login(email, password) {
     },
     body: JSON.stringify({ email, password })
   });
-  
+
   const result = await response.json();
-  
+
   if (result.success) {
     // 保存Token
     localStorage.setItem('auth_token', result.data.token);
@@ -307,7 +307,7 @@ async function login(email, password) {
 // 使用Token调用API
 async function apiCall(endpoint, options = {}) {
   const token = localStorage.getItem('auth_token');
-  
+
   const response = await fetch(`/api${endpoint}`, {
     ...options,
     headers: {
@@ -316,7 +316,7 @@ async function apiCall(endpoint, options = {}) {
       ...options.headers
     }
   });
-  
+
   return response.json();
 }
 ```
@@ -330,7 +330,7 @@ class AuthAPI:
         self.base_url = base_url
         self.token = None
         self.session = requests.Session()
-    
+
     def login(self, email, password):
         """用户登录"""
         response = self.session.post(
@@ -338,7 +338,7 @@ class AuthAPI:
             json={"email": email, "password": password}
         )
         result = response.json()
-        
+
         if result['success']:
             self.token = result['data']['token']
             self.session.headers.update({
@@ -347,22 +347,22 @@ class AuthAPI:
             return result['data']['user']
         else:
             raise Exception(result['message'])
-    
+
     def get_token_info(self):
         """获取Token信息"""
         response = self.session.get(f"{self.base_url}/users/get_token/")
         result = response.json()
-        
+
         if result['success']:
             return result['data']
         else:
             raise Exception(result['message'])
-    
+
     def refresh_token(self):
         """刷新Token"""
         response = self.session.post(f"{self.base_url}/users/refresh_token/")
         result = response.json()
-        
+
         if result['success']:
             self.token = result['data']['token']
             self.session.headers.update({

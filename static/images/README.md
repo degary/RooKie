@@ -6,7 +6,7 @@
 - `logo.png` - 主要logo文件（推荐尺寸：120x40px 或 200x60px）
 - `favicon.ico` - 浏览器图标（16x16px 或 32x32px）
 
-## 可选文件  
+## 可选文件
 - `logo-dark.png` - 暗黑模式logo
 - `logo-small.png` - 小尺寸logo
 

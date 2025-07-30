@@ -6,4 +6,4 @@ from .auth import DingtalkAuthPlugin
 # 保持向后兼容
 DingTalkAuthPlugin = DingtalkAuthPlugin
 
-__all__ = ['DingtalkAuthPlugin', 'DingTalkAuthPlugin']
+__all__ = ["DingtalkAuthPlugin", "DingTalkAuthPlugin"]

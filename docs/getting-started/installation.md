@@ -34,7 +34,7 @@ python -m venv venv
 # 激活虚拟环境
 # Windows
 venv\Scripts\activate
-# macOS/Linux  
+# macOS/Linux
 source venv/bin/activate
 ```
 

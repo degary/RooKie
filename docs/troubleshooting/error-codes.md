@@ -68,7 +68,7 @@
   - Token无效或过期
   - 未提供认证信息
   - Session过期
-- **解决方案**: 
+- **解决方案**:
   - 检查Token格式: `Authorization: Token your_token_here`
   - 重新登录获取新Token
   - 检查Session状态
@@ -196,7 +196,7 @@
   - 代码异常
   - 数据库连接失败
   - 配置错误
-- **解决方案**: 
+- **解决方案**:
   - 查看服务器日志
   - 联系技术支持
   - 检查服务器状态
@@ -360,7 +360,7 @@
 
 #### 3001 第三方认证失败
 - **触发条件**: 钉钉、企微等登录授权失败
-- **解决方案**: 
+- **解决方案**:
   - 检查第三方应用配置
   - 确认用户在组织内
   - 重新扫码登录
@@ -415,30 +415,30 @@
 ```javascript
 async function handleAPIError(response) {
   const data = await response.json();
-  
+
   switch (data.code) {
     case 401:
       // Token无效，重新登录
       localStorage.removeItem('auth_token');
       window.location.href = '/login';
       break;
-      
+
     case 403:
       // 权限不足
       showError('权限不足: ' + data.message);
       break;
-      
+
     case 422:
       // 数据验证失败
       showValidationErrors(data.data);
       break;
-      
+
     case 500:
       // 服务器错误
       showError('服务器错误，请稍后重试');
       reportError(data);
       break;
-      
+
     default:
       showError(data.message);
   }
@@ -463,7 +463,7 @@ def handle_business_error(error_code, message, **kwargs):
             'request_id': kwargs.get('request_id')
         }
     )
-    
+
     return ApiResponse.business_error(
         message=message,
         code=error_code,

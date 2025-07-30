@@ -4,30 +4,48 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('users', '0004_remove_userloginlog_user_user_dingtalk_user_id_and_more'),
+        ("users", "0004_remove_userloginlog_user_user_dingtalk_user_id_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Department',
+            name="Department",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100, verbose_name='部门名称')),
-                ('external_id', models.CharField(max_length=100, verbose_name='外部ID')),
-                ('parent_id', models.CharField(blank=True, max_length=100, null=True, verbose_name='父部门ID')),
-                ('source', models.CharField(max_length=50, verbose_name='来源系统')),
-                ('order', models.IntegerField(default=0, verbose_name='排序')),
-                ('is_active', models.BooleanField(default=True, verbose_name='是否启用')),
-                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='创建时间')),
-                ('updated_at', models.DateTimeField(auto_now=True, verbose_name='更新时间')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100, verbose_name="部门名称")),
+                ("external_id", models.CharField(max_length=100, verbose_name="外部ID")),
+                (
+                    "parent_id",
+                    models.CharField(
+                        blank=True, max_length=100, null=True, verbose_name="父部门ID"
+                    ),
+                ),
+                ("source", models.CharField(max_length=50, verbose_name="来源系统")),
+                ("order", models.IntegerField(default=0, verbose_name="排序")),
+                ("is_active", models.BooleanField(default=True, verbose_name="是否启用")),
+                (
+                    "created_at",
+                    models.DateTimeField(auto_now_add=True, verbose_name="创建时间"),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, verbose_name="更新时间"),
+                ),
             ],
             options={
-                'verbose_name': '部门',
-                'verbose_name_plural': '部门',
-                'db_table': 'users_department',
-                'unique_together': {('external_id', 'source')},
+                "verbose_name": "部门",
+                "verbose_name_plural": "部门",
+                "db_table": "users_department",
+                "unique_together": {("external_id", "source")},
             },
         ),
     ]

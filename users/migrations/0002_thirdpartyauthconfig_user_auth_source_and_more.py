@@ -4,42 +4,64 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('users', '0001_initial'),
+        ("users", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ThirdPartyAuthConfig',
+            name="ThirdPartyAuthConfig",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50, unique=True, verbose_name='插件名称')),
-                ('display_name', models.CharField(max_length=100, verbose_name='显示名称')),
-                ('is_enabled', models.BooleanField(default=False, verbose_name='是否启用')),
-                ('config', models.JSONField(default=dict, verbose_name='配置信息')),
-                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='创建时间')),
-                ('updated_at', models.DateTimeField(auto_now=True, verbose_name='更新时间')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(max_length=50, unique=True, verbose_name="插件名称"),
+                ),
+                ("display_name", models.CharField(max_length=100, verbose_name="显示名称")),
+                ("is_enabled", models.BooleanField(default=False, verbose_name="是否启用")),
+                ("config", models.JSONField(default=dict, verbose_name="配置信息")),
+                (
+                    "created_at",
+                    models.DateTimeField(auto_now_add=True, verbose_name="创建时间"),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, verbose_name="更新时间"),
+                ),
             ],
             options={
-                'verbose_name': '第三方认证配置',
-                'verbose_name_plural': '第三方认证配置',
-                'db_table': 'third_party_auth_configs',
+                "verbose_name": "第三方认证配置",
+                "verbose_name_plural": "第三方认证配置",
+                "db_table": "third_party_auth_configs",
             },
         ),
         migrations.AddField(
-            model_name='user',
-            name='auth_source',
-            field=models.CharField(blank=True, max_length=50, null=True, verbose_name='认证来源'),
+            model_name="user",
+            name="auth_source",
+            field=models.CharField(
+                blank=True, max_length=50, null=True, verbose_name="认证来源"
+            ),
         ),
         migrations.AddField(
-            model_name='user',
-            name='external_id',
-            field=models.CharField(blank=True, max_length=100, null=True, verbose_name='外部ID'),
+            model_name="user",
+            name="external_id",
+            field=models.CharField(
+                blank=True, max_length=100, null=True, verbose_name="外部ID"
+            ),
         ),
         migrations.AddField(
-            model_name='userloginlog',
-            name='auth_source',
-            field=models.CharField(blank=True, max_length=50, null=True, verbose_name='认证来源'),
+            model_name="userloginlog",
+            name="auth_source",
+            field=models.CharField(
+                blank=True, max_length=50, null=True, verbose_name="认证来源"
+            ),
         ),
     ]

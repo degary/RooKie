@@ -17,7 +17,7 @@ Rookie项目采用基于Django原生权限系统的模块级权限控制，支�
 
 权限类型：
 • view    - 可查看
-• add     - 可新增  
+• add     - 可新增
 • change  - 可修改
 • delete  - 可删除
 ```
@@ -41,7 +41,7 @@ http://127.0.0.1:8000/admin/
 
 # 相关页面
 - 用户管理 > 系统模块
-- 权限管理 > 用户组  
+- 权限管理 > 用户组
 - 用户管理 > 用户
 ```
 
@@ -58,12 +58,12 @@ class UserViewSet(ModulePermissionMixin, viewsets.ModelViewSet):
     """用户管理ViewSet"""
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    
+
     # 模块权限配置
     module_name = 'user_management'
     permission_mapping = {
         'list': 'view',
-        'retrieve': 'view', 
+        'retrieve': 'view',
         'create': 'add',
         'update': 'change',
         'partial_update': 'change',
@@ -76,14 +76,14 @@ class UserViewSet(ModulePermissionMixin, viewsets.ModelViewSet):
 from utils.auth.permissions import require_module_permission
 
 class UserViewSet(viewsets.ModelViewSet):
-    
+
     @action(detail=False, methods=['get'])
     @require_module_permission('user_management', 'view')
     def active_users(self, request):
         """获取活跃用户 - 需要查看权限"""
         users = User.objects.filter(is_active=True)
         return ApiResponse.success(data={'users': UserSerializer(users, many=True).data})
-    
+
     @action(detail=True, methods=['post'])
     @require_module_permission('user_management', 'change')
     def reset_password(self, request, pk=None):
@@ -96,7 +96,7 @@ class UserViewSet(viewsets.ModelViewSet):
 #### 动态权限配置
 ```python
 class UserViewSet(viewsets.ModelViewSet):
-    
+
     def get_permissions(self):
         """根据动作动态设置权限"""
         permission_map = {
@@ -105,11 +105,11 @@ class UserViewSet(viewsets.ModelViewSet):
             'update': ('user_management', 'change'),
             'destroy': ('user_management', 'delete'),
         }
-        
+
         if self.action in permission_map:
             module, perm_type = permission_map[self.action]
             return [IsAuthenticated(), ModulePermission(module, perm_type)]
-        
+
         return [IsAuthenticated()]
 ```
 
@@ -250,15 +250,15 @@ def test_permissions():
     })
     token = response.json()['data']['token']
     headers = {'Authorization': f'Token {token}'}
-    
+
     # 测试权限接口
     response = requests.get('http://127.0.0.1:8000/api/users/my_modules/', headers=headers)
     modules = response.json()['data']['modules']
-    
+
     print("用户可访问的模块:")
     for module in modules:
         print(f"- {module['display_name']}: {module['permissions']}")
-    
+
     # 测试具体权限
     response = requests.get('http://127.0.0.1:8000/api/users/', headers=headers)
     if response.status_code == 200:
@@ -277,7 +277,7 @@ if __name__ == '__main__':
 # 所有模块的所有权限
 admin_permissions = [
     'user_management.view',
-    'user_management.add', 
+    'user_management.add',
     'user_management.change',
     'user_management.delete',
     'system_config.view',
@@ -336,7 +336,7 @@ employee_permissions = [
 ## 🆘 常见问题
 
 ### Q: 如何为新功能添加权限控制？
-A: 
+A:
 1. 创建对应的系统模块
 2. 在视图中添加权限检查装饰器
 3. 为相关用户组分配权限

@@ -282,23 +282,23 @@ class BaseAuthPlugin(ABC):
     def name(self) -> str:
         """插件名称"""
         pass
-    
+
     @property
     @abstractmethod
     def display_name(self) -> str:
         """显示名称"""
         pass
-    
+
     @abstractmethod
     def get_auth_url(self) -> str:
         """获取授权URL"""
         pass
-    
+
     @abstractmethod
     def get_user_info(self, code: str) -> Dict[str, Any]:
         """获取用户信息"""
         pass
-    
+
     def sync_users(self) -> int:
         """同步用户（可选实现）"""
         return 0
@@ -310,12 +310,12 @@ class PluginManager:
     def __init__(self):
         self._plugins = {}
         self._load_plugins()
-    
+
     def register_plugin(self, plugin_class):
         """注册插件"""
         plugin = plugin_class()
         self._plugins[plugin.name] = plugin
-    
+
     def get_plugin(self, name: str, config: Dict) -> BaseAuthPlugin:
         """获取插件实例"""
         if name in self._plugins:

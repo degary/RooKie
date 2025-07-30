@@ -226,36 +226,36 @@ def test_token_auth():
     # 1. 注册用户
     register_data = {
         "email": "test@example.com",
-        "username": "testuser", 
+        "username": "testuser",
         "password": "testpass123",
         "password_confirm": "testpass123"
     }
-    
+
     response = requests.post(f"{BASE_URL}/api/users/register/", json=register_data)
     print("注册响应:", response.json())
-    
+
     # 2. 登录获取Token
     login_data = {
         "email": "test@example.com",
         "password": "testpass123"
     }
-    
+
     response = requests.post(f"{BASE_URL}/api/users/login/", json=login_data)
     result = response.json()
     token = result['data']['token']
     print("登录成功，Token:", token)
-    
+
     # 3. 使用Token访问API
     headers = {"Authorization": f"Token {token}"}
-    
+
     response = requests.get(f"{BASE_URL}/api/users/profile/", headers=headers)
     print("用户信息:", response.json())
-    
+
     # 4. 刷新Token
     response = requests.post(f"{BASE_URL}/api/users/refresh_token/", headers=headers)
     new_token = response.json()['data']['token']
     print("新Token:", new_token)
-    
+
     # 5. 撤销Token
     headers = {"Authorization": f"Token {new_token}"}
     response = requests.delete(f"{BASE_URL}/api/users/revoke_token/", headers=headers)

@@ -8,8 +8,8 @@
 
 ### 获取用户信息
 
-**接口地址**: `GET /api/users/profile/`  
-**认证要求**: Token或Session  
+**接口地址**: `GET /api/users/profile/`
+**认证要求**: Token或Session
 **权限要求**: 已登录用户
 
 #### 响应示例
@@ -42,8 +42,8 @@
 
 ### 更新用户资料
 
-**接口地址**: `PATCH /api/users/update_profile/`  
-**认证要求**: Token或Session  
+**接口地址**: `PATCH /api/users/update_profile/`
+**认证要求**: Token或Session
 **权限要求**: 已登录用户
 
 #### 请求参数
@@ -87,8 +87,8 @@
 
 ### 获取用户权限模块
 
-**接口地址**: `GET /api/users/my_modules/`  
-**认证要求**: Token或Session  
+**接口地址**: `GET /api/users/my_modules/`
+**认证要求**: Token或Session
 **权限要求**: 已登录用户
 
 #### 响应示例
@@ -141,8 +141,8 @@
 
 ### 获取用户统计信息
 
-**接口地址**: `GET /api/users/statistics/`  
-**认证要求**: Token或Session  
+**接口地址**: `GET /api/users/statistics/`
+**认证要求**: Token或Session
 **权限要求**: 数据分析查看权限
 
 #### 响应示例
@@ -181,7 +181,7 @@ class UserAPI {
     this.token = token;
     this.baseURL = '/api/users';
   }
-  
+
   async getProfile() {
     const response = await fetch(`${this.baseURL}/profile/`, {
       headers: {
@@ -190,7 +190,7 @@ class UserAPI {
     });
     return response.json();
   }
-  
+
   async updateProfile(data) {
     const response = await fetch(`${this.baseURL}/update_profile/`, {
       method: 'PATCH',
@@ -202,7 +202,7 @@ class UserAPI {
     });
     return response.json();
   }
-  
+
   async getModules() {
     const response = await fetch(`${this.baseURL}/my_modules/`, {
       headers: {
@@ -244,12 +244,12 @@ class UserAPI:
             'Authorization': f'Token {token}',
             'Content-Type': 'application/json'
         }
-    
+
     def get_profile(self):
         """获取用户信息"""
         response = requests.get(f"{self.base_url}/profile/", headers=self.headers)
         return response.json()
-    
+
     def update_profile(self, **kwargs):
         """更新用户资料"""
         response = requests.patch(
@@ -258,12 +258,12 @@ class UserAPI:
             headers=self.headers
         )
         return response.json()
-    
+
     def get_modules(self):
         """获取权限模块"""
         response = requests.get(f"{self.base_url}/my_modules/", headers=self.headers)
         return response.json()
-    
+
     def get_statistics(self):
         """获取用户统计"""
         response = requests.get(f"{self.base_url}/statistics/", headers=self.headers)

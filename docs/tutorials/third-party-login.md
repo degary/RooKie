@@ -323,13 +323,13 @@ curl -X POST http://127.0.0.1:8000/api/users/sync_users/ \
     "is_enabled": true
   },
   {
-    "name": "wechat_work", 
+    "name": "wechat_work",
     "display_name": "企业微信登录",
     "is_enabled": true
   },
   {
     "name": "feishu",
-    "display_name": "飞书登录", 
+    "display_name": "飞书登录",
     "is_enabled": true
   }
 ]
@@ -356,27 +356,27 @@ class GitHubAuthPlugin(BaseAuthPlugin):
     @property
     def name(self) -> str:
         return 'github'
-    
+
     @property
     def display_name(self) -> str:
         return 'GitHub登录'
-    
+
     def get_auth_url(self) -> str:
         """生成GitHub OAuth授权URL"""
         client_id = self.config.get('client_id')
         redirect_uri = self.config.get('redirect_uri')
-        
+
         return f"https://github.com/login/oauth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&scope=user:email"
-    
+
     def get_user_info(self, code: str) -> dict:
         """获取GitHub用户信息"""
         # 1. 获取access_token
         token_data = self._get_access_token(code)
         access_token = token_data.get('access_token')
-        
+
         # 2. 获取用户信息
         user_info = self._get_user_profile(access_token)
-        
+
         # 3. 标准化返回格式
         return {
             'source': 'github',
@@ -396,7 +396,7 @@ class PluginManager:
     def _load_plugins(self):
         plugin_classes = [
             DingTalkAuthPlugin,
-            WeChatWorkAuthPlugin, 
+            WeChatWorkAuthPlugin,
             FeishuAuthPlugin,
             GitHubAuthPlugin,  # 新增插件
         ]
@@ -545,7 +545,7 @@ def sync_third_party_users():
 # models.py
 class ThirdPartyAuthConfig(models.Model):
     # ... 现有字段
-    
+
     # 新增同步配置字段
     auto_sync_enabled = models.BooleanField('启用自动同步', default=False)
     sync_interval = models.IntegerField('同步间隔(秒)', default=3600)

@@ -65,14 +65,14 @@ from rest_framework import viewsets
 from utils.response import ApiResponse
 
 class UserViewSet(viewsets.ModelViewSet):
-    
+
     def list(self, request):
         users = User.objects.all()
         return ApiResponse.success(
             data={'users': UserSerializer(users, many=True).data},
             message="获取用户列表成功"
         ).to_response()
-    
+
     def create(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
@@ -162,17 +162,17 @@ class ErrorCode:
     # 成功
     SUCCESS = 200
     CREATED = 201
-    
+
     # 客户端错误
     BAD_REQUEST = 400
     UNAUTHORIZED = 401
     FORBIDDEN = 403
     NOT_FOUND = 404
     VALIDATION_ERROR = 422
-    
+
     # 服务器错误
     INTERNAL_ERROR = 500
-    
+
     # 业务错误
     USER_NOT_EXIST = 1001
     PERMISSION_DENIED = 1002
@@ -191,7 +191,7 @@ from utils.response import ApiException, BusinessException
 def transfer_money(from_user, to_user, amount):
     if from_user.balance < amount:
         raise BusinessException("余额不足", code=1005)
-    
+
     # 执行转账逻辑...
     return ApiResponse.success(message="转账成功")
 ```
@@ -223,7 +223,7 @@ def get_users_paginated(request):
     users = User.objects.all()
     paginator = Paginator(users, 10)
     page = paginator.get_page(request.GET.get('page', 1))
-    
+
     return ApiResponse.success(
         data={
             'users': UserSerializer(page.object_list, many=True).data,
@@ -246,7 +246,7 @@ def update_user(request, user_id):
         user = User.objects.get(id=user_id)
     except User.DoesNotExist:
         return ApiResponse.not_found("用户不存在").to_response()
-    
+
     serializer = UserSerializer(user, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
@@ -314,7 +314,7 @@ class UserService:
         # 业务逻辑
         if User.objects.filter(email=user_data['email']).exists():
             return ApiResponse.business_error("邮箱已存在")
-        
+
         user = User.objects.create(**user_data)
         return ApiResponse.created(data={'user_id': user.id})
 
